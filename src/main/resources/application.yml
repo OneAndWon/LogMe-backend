@@ -1,23 +1,21 @@
-server:
-  port: 8080 # ?? ?? ??
-
 spring:
-  # === ?????? ?? ===
-  application:
-    name: LogMe
+  # === 기본(default) 프로필: dev로 설정 ===
+  profiles:
+    active: dev # 기본으로 dev 프로필을 사용
+    group:
+      dev: ["common", "dev-db"] # dev는 common + dev-db 설정을 읽음
+      test: ["common", "test-db"] # test는 common + test-db 설정을 읽음
 
-  # === ??????(PostgreSQL) ?? ===
-  datasource:
-    driver-class-name: org.postgresql.Driver
-    url: jdbc:postgresql://localhost:5432/haru_record_db
-    username: postgres
-    password: password
+---
+# === (1) 공통 설정 (common) ===
+spring:
+  config:
+    activate:
+      on-profile: "common"
 
-  # === JPA (Hibernate) ?? ===
   jpa:
-    database-platform: org.hibernate.dialect.PostgreSQLDialect
     hibernate:
-      ddl-auto: update
+      ddl-auto: update # (개발/테스트용)
     properties:
       hibernate:
         show_sql: true
@@ -25,9 +23,46 @@ spring:
         default_batch_fetch_size: 100
     open-in-view: false
 
-  # === Elasticsearch ?? ===
-  elasticsearch:
-    uris:
-      - http://localhost:9200
-    # username: (???)
-    # password: (???)
+  # (ERD의 컬럼명(예: user_id)과 Entity 필드명(예: userId)을 자동 매핑)
+  jpa.hibernate.naming.physical-strategy: org.hibernate.boot.model.naming.PhysicalNamingStrategyStandardImpl
+
+# JWT 시크릿 키 (터미널에서 'openssl rand -base64 64'로 생성)
+jwt:
+  secret: "YOUR_VERY_LONG_AND_SECURE_SECRET_KEY_GOES_HERE_12345"
+  access-token-expiration-seconds: 3600 # 1시간
+
+# Swagger (Springdoc)
+springdoc:
+  api-docs:
+    path: /api-docs
+  swagger-ui:
+    path: /swagger-ui.html
+  info:
+    title: "LogMe API Documentation"
+    version: "v1.0.0"
+
+---
+# === (2) 개발용 DB (dev-db) ===
+spring:
+  config:
+    activate:
+      on-profile: "dev-db"
+  datasource:
+    driver-class-name: org.postgresql.Driver
+    url: jdbc:postgresql://localhost:5432/logme_db # 로컬 개발용 DB
+    username: postgres
+    password: password # 본인 로컬 DB 비밀번호
+  jpa.database-platform: org.hibernate.dialect.PostgreSQLDialect
+
+---
+# === (3) 테스트용 DB (test-db) ===
+spring:
+  config:
+    activate:
+      on-profile: "test-db"
+  datasource:
+    driver-class-name: org.postgresql.Driver
+    url: jdbc:postgresql://localhost:5432/logme_test_db # 로컬 테스트용 DB
+    username: postgres
+    password: password
+  jpa.database-platform: org.hibernate.dialect.PostgreSQLDialect
