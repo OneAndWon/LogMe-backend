@@ -50,6 +50,9 @@ dependencies {
     //PostgreSQL의 JSONB 타입 지원
     // UserSettings, AiReport의 JSON 타입 매핑을 위해 필요
     implementation 'io.hypersistence:hypersistence-utils-hibernate-63:3.8.2'
+
+    //.env
+    implementation 'me.paulschwarz:spring-dotenv:4.0.0'
 }
 
 tasks.named('test') {

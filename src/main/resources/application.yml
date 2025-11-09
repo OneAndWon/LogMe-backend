@@ -18,11 +18,6 @@ spring:
     # 참고: camelCase -> snake_case 매핑 전략(SpringPhysicalNamingStrategy)은
     # Spring Boot JPA의 기본값이므로 별도로 명시할 필요가 없습니다.
 
-  # JWT 시크릿 키 (터미널에서 'openssl rand -base64 64'로 생성)
-  jwt:
-    secret: "YOUR_VERY_LONG_AND_SECURE_SECRET_KEY_GOES_HERE_12345"
-    access-token-expiration-seconds: 3600 # 1시간
-
   # Swagger (Springdoc)
   springdoc:
     api-docs:
@@ -32,6 +27,11 @@ spring:
     info:
       title: "LogMe API Documentation"
       version: "v1.0.0"
+
+# JWT 시크릿 키 (터미널에서 'openssl rand -base64 64'로 생성)
+jwt:
+  secret: ${JWT_SECRET}
+  access-token-expiration-seconds: 3600 # 1시간
 ---
 
 # ---------------------------------
