@@ -1,68 +1,89 @@
+# ---------------------------------
+# (1) 공통 설정 (모든 프로필에 적용)
+# ---------------------------------
 spring:
-  # === 기본(default) 프로필: dev로 설정 ===
-  profiles:
-    active: dev # 기본으로 dev 프로필을 사용
-    group:
-      dev: ["common", "dev-db"] # dev는 common + dev-db 설정을 읽음
-      test: ["common", "test-db"] # test는 common + test-db 설정을 읽음
+  application:
+    name: my-awesome-app
 
----
-# === (1) 공통 설정 (common) ===
-spring:
-  config:
-    activate:
-      on-profile: "common"
+  # 기본 프로필을 dev로 설정 (지정하지 않을 경우 dev가 활성화됨)
+  profiles:
+    default: dev
 
   jpa:
-    hibernate:
-      ddl-auto: update # (개발/테스트용)
+    show-sql: true # SQL 쿼리 로깅 (개발 시 유용)
     properties:
       hibernate:
-        show_sql: true
         format_sql: true
         default_batch_fetch_size: 100
-    open-in-view: false
+    # 참고: camelCase -> snake_case 매핑 전략(SpringPhysicalNamingStrategy)은
+    # Spring Boot JPA의 기본값이므로 별도로 명시할 필요가 없습니다.
 
-  # (ERD의 컬럼명(예: user_id)과 Entity 필드명(예: userId)을 자동 매핑)
-  jpa.hibernate.naming.physical-strategy: org.hibernate.boot.model.naming.PhysicalNamingStrategyStandardImpl
+  # JWT 시크릿 키 (터미널에서 'openssl rand -base64 64'로 생성)
+  jwt:
+    secret: "YOUR_VERY_LONG_AND_SECURE_SECRET_KEY_GOES_HERE_12345"
+    access-token-expiration-seconds: 3600 # 1시간
 
-# JWT 시크릿 키 (터미널에서 'openssl rand -base64 64'로 생성)
-jwt:
-  secret: "YOUR_VERY_LONG_AND_SECURE_SECRET_KEY_GOES_HERE_12345"
-  access-token-expiration-seconds: 3600 # 1시간
-
-# Swagger (Springdoc)
-springdoc:
-  api-docs:
-    path: /api-docs
-  swagger-ui:
-    path: /swagger-ui.html
-  info:
-    title: "LogMe API Documentation"
-    version: "v1.0.0"
-
+  # Swagger (Springdoc)
+  springdoc:
+    api-docs:
+      path: /api-docs
+    swagger-ui:
+      path: /swagger-ui.html
+    info:
+      title: "LogMe API Documentation"
+      version: "v1.0.0"
 ---
-# === (2) 개발용 DB (dev-db) ===
+
+# ---------------------------------
+# (2) 'dev' 프로필 (개발용: H2)
+# ---------------------------------
 spring:
   config:
     activate:
-      on-profile: "dev-db"
+      on-profile: dev # 'dev' 프로필일 때 이 설정이 활성화됨
+
   datasource:
-    driver-class-name: org.postgresql.Driver
-    url: jdbc:postgresql://localhost:5432/logme_db # 로컬 개발용 DB
-    username: postgres
-    password: password # 본인 로컬 DB 비밀번호
-  jpa.database-platform: org.hibernate.dialect.PostgreSQLDialect
+    driver-class-name: org.h2.Driver
+    # H2 인메모리 DB 사용
+    url: jdbc:h2:mem:testdb;DB_CLOSE_DELAY=-1
+    username: sa
+    password:
+
+  h2:
+    console:
+      enabled: true   # H2 콘솔 (http://localhost:8080/h2-console) 활성화
+      path: /h2-console
+
+  jpa:
+    database-platform: org.hibernate.dialect.H2Dialect
+    # 애플리케이션 실행 시 스키마를 (삭제 후) 다시 생성
+    hibernate:
+      ddl-auto: create-drop
 
 ---
-# === (3) 테스트용 DB (test-db) ===
+
+# ---------------------------------
+# (3) 'prod' 프로필 (배포용: PostgreSQL)
+# ---------------------------------
 spring:
   config:
     activate:
-      on-profile: "test-db"
+      on-profile: prod # 'prod' 프로필일 때 이 설정이 활성화됨
+
   datasource:
     driver-class-name: org.postgresql.Driver
-    url: jdbc:postgresql://localhost:5432/logme_test_db # 로컬 테스트용 DB
-    username: postgres
-    password: password
-  jpa.database-platform: org.hibernate.dialect.PostgreSQLDialect
+    # 실제 운영 DB 주소 (보안을 위해 환경 변수 사용 권장)
+    url: jdbc:postgresql://${PROD_DB_HOST}:${PROD_DB_PORT}/${PROD_DB_NAME}
+    username: ${PROD_DB_USER}
+    password: ${PROD_DB_PASS}
+
+  jpa:
+    database-platform: org.hibernate.dialect.PostgreSQLDialect
+    # 운영 환경에서는 스키마를 자동으로 변경하지 않음
+    # 'validate': 스키마가 맞는지 검증
+    # 'none': 아무것도 하지 않음 (가장 안전)
+    hibernate:
+      ddl-auto: validate
+
+    # 운영 환경에서는 SQL 로깅 비활성화 (성능 저하 방지)
+    show-sql: false
