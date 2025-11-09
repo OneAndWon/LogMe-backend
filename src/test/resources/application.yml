@@ -1,0 +1,29 @@
+# === 테스트 환경은 H2 인메모리 DB를 사용 ===
+spring:
+  # (1) H2 DB 접속 설정
+  datasource:
+    # URL에 MODE=PostgreSQL;DATABASE_TO_LOWER=TRUE 를 추가하여
+    # H2가 PostgreSQL 문법을 최대한 흉내 내도록 설정합니다.
+    url: jdbc:h2:mem:testdb;MODE=PostgreSQL;DATABASE_TO_LOWER=TRUE
+    driverClassName: org.h2.Driver
+    username: sa
+    password:
+
+  # (2) JPA/Hibernate 설정
+  jpa:
+    # H2 DB용 Dialect(방언) 설정
+    database-platform: org.hibernate.dialect.H2Dialect
+    hibernate:
+      # 테스트 시에는 테이블을 매번 새로 생성 (H2는 인메모리라 상관없음)
+      ddl-auto: create
+    properties:
+      hibernate:
+        # H2는 jsonb 타입을 모르므로, hypersistence가 문자열(VARCHAR) 기반으로 흉내 내도록 설정
+        # 이것이 H2의 한계점이지만, 단순 테스트는 통과 가능합니다.
+        hibernate.type.json_format_mapper: 'com.fasterxml.jackson.databind.ObjectMapper'
+
+  # (3) H2 웹 콘솔 (선택 사항이지만 유용함)
+  h2:
+    console:
+      enabled: true
+      path: /h2-console
