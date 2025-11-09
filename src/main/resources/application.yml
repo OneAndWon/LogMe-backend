@@ -1,0 +1,33 @@
+server:
+  port: 8080 # ?? ?? ??
+
+spring:
+  # === ?????? ?? ===
+  application:
+    name: LogMe
+
+  # === ??????(PostgreSQL) ?? ===
+  datasource:
+    driver-class-name: org.postgresql.Driver
+    url: jdbc:postgresql://localhost:5432/haru_record_db
+    username: postgres
+    password: password
+
+  # === JPA (Hibernate) ?? ===
+  jpa:
+    database-platform: org.hibernate.dialect.PostgreSQLDialect
+    hibernate:
+      ddl-auto: update
+    properties:
+      hibernate:
+        show_sql: true
+        format_sql: true
+        default_batch_fetch_size: 100
+    open-in-view: false
+
+  # === Elasticsearch ?? ===
+  elasticsearch:
+    uris:
+      - http://localhost:9200
+    # username: (???)
+    # password: (???)
