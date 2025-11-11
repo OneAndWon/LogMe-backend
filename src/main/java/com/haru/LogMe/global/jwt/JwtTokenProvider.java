@@ -39,7 +39,7 @@ public class JwtTokenProvider {
     }
 
     /**
-     * Authentication 객체를 받아 Access Token을 생성합니다.
+     * Authentication 객체를 받아 Access Token을 생성합니다. -> 로그인 필터용: 소셜로그인 로그인 시 토큰 발급.
      */
     public String generateAccessToken(Authentication authentication) {
         String authorities = authentication.getAuthorities().stream()
@@ -56,6 +56,26 @@ public class JwtTokenProvider {
                 .setExpiration(validity)
                 .compact();
     }
+
+    /**
+     * user 엔티티(UserDetails)를 받아 access token 생성.
+     */
+    public String generateAccessToken(com.haru.LogMe.domain.user.entity.User user) {
+        String authorities = user.getAuthorities().stream()
+                .map(GrantedAuthority::getAuthority)
+                .collect(Collectors.joining(","));
+
+        long now = (new Date()).getTime();
+        Date validity = new Date(now + this.accessTokenValidityInMilliseconds);
+
+        return Jwts.builder()
+                .setSubject(user.getUsername()) // UserDetails의 getUsername() 사용
+                .claim(AUTHORITIES_KEY, authorities)
+                .signWith(key, SignatureAlgorithm.HS512) // 기존 방식과 동일하게 HS512
+                .setExpiration(validity)
+                .compact();
+    }
+
 
     /**
      * 토큰에서 인증 정보(Authentication)를 추출합니다.

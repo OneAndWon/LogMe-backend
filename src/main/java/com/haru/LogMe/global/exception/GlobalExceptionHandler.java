@@ -4,6 +4,7 @@ import com.haru.LogMe.global.response.ApiResponse;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 
@@ -22,8 +23,21 @@ public class GlobalExceptionHandler {
     }
 
     // @Valid 유효성 검사 실패 시 처리 -> 나중에 필요하면 처리
-    // @ExceptionHandler(MethodArgumentNotValidException.class)
-    // public ResponseEntity<ApiResponse<?>> handleValidException(MethodArgumentNotValidException e) { ... }
+    @ExceptionHandler(MethodArgumentNotValidException.class)
+    public ResponseEntity<ApiResponse<?>> handleValidException(MethodArgumentNotValidException e) {
+        String errorMessage = e.getBindingResult()
+                .getAllErrors()
+                .get(0)
+                .getDefaultMessage();
+
+        log.warn("Validation failed: {}", errorMessage);
+
+        ApiResponse<?> apiResponse = ApiResponse.error("VALIDATION_FAILED", errorMessage);
+
+        return ResponseEntity
+                .status(HttpStatus.BAD_REQUEST) //400 상태 코드
+                .body(apiResponse);
+    }
 
     @ExceptionHandler(Exception.class)
     public ResponseEntity<ApiResponse<?>> handleGlobalException(Exception e) {
