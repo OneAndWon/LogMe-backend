@@ -16,18 +16,20 @@ import java.util.Collections;
 @Entity
 @Getter
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
-@Table(name = "users")
+@Table(
+        name = "users",
+        uniqueConstraints = {
+                @UniqueConstraint(columnNames = {"provider", "social_id"})
+        }
+)
 public class User extends BaseTimeEntity implements UserDetails {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "user_id")
     private Long id;
 
-    @Column(unique = true)
+    @Column
     private String email;
-
-    @Column(name = "password_hash")
-    private String passwordHash;
 
     private String nickname;
 
@@ -36,6 +38,12 @@ public class User extends BaseTimeEntity implements UserDetails {
 
     @Column(name = "device_id", unique = true)
     private String deviceId;
+
+    @Column(name = "social_id")
+    private String socialId;
+
+    @Column(name = "provider")
+    private String provider; // 예: "kakao", "google", "apple"
 
     @OneToOne(mappedBy = "user", cascade = CascadeType.ALL, fetch = FetchType.LAZY, orphanRemoval = true)
     private UserSettings userSettings;
@@ -49,34 +57,47 @@ public class User extends BaseTimeEntity implements UserDetails {
     }
 
     @Builder
-    public User(Long id, String email, String passwordHash, String nickname, Boolean isGuest, String deviceId) {
+    public User(Long id, String email, String nickname,
+                Boolean isGuest, String deviceId, String socialId, String provider) {
         this.id = id;
         this.email = email;
-        this.passwordHash = passwordHash;
         this.nickname = nickname;
         this.isGuest = isGuest != null ? isGuest : true;
         this.deviceId = deviceId;
+        this.socialId = socialId;
+        this.provider = provider;
     }
 
     // --- UserDetails 구현 ---
 
     @Override
     public Collection<? extends GrantedAuthority> getAuthorities() {
-        // 여기서는 단순하게 "ROLE_USER"를 부여합니다.
-        // isGuest에 따라 "ROLE_GUEST" 등으로 분기할 수도 있습니다.
+        // 비회원과 정회원 권한 분기
+        if (Boolean.TRUE.equals(this.isGuest)) {
+            return Collections.singletonList(new SimpleGrantedAuthority("ROLE_GUEST"));
+        }
         return Collections.singletonList(new SimpleGrantedAuthority("ROLE_USER"));
     }
 
     @Override
     public String getPassword() {
-        return this.passwordHash;
+        return null;
     }
 
     @Override
     public String getUsername() {
-        // Spring Security에서 사용자를 식별하는 고유 ID
-        // 게스트/정회원 모두 고유하고 non-null인 ID를 반환해야 합니다.
-        // email은 게스트의 경우 null일 수 있으므로, user_id를 문자열로 반환합니다.
+        // Spring Security의 식별자
+        // 1. 소셜 로그인 유저
+        if (this.socialId != null && this.provider != null)
+            return this.provider + "_" + this.socialId;
+
+        // 2. 비회원(게스트) 유저
+        if (this.deviceId != null) return "guest_" + this.deviceId;
+
+        // 3. (Fallback) 이메일
+        if (this.email != null) return this.email;
+
+        // 4. (최후 Fallback)
         return String.valueOf(this.id);
     }
 
