@@ -53,7 +53,7 @@ public class SecurityConfig {
 
                 // 3-4. HTTP 요청 권한 설정
                 .authorizeHttpRequests(auth -> auth
-                        // "/api/auth/**" (회원가입/로그인)는 인증 없이 허용
+                        // "/logme/auth/**" (회원가입/로그인)는 인증 없이 허용
                         .requestMatchers("/logme/auth/**").permitAll()
 
                         // Swagger UI 관련 엔드포인트 허용
