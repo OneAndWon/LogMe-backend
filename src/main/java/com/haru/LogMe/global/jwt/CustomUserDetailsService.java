@@ -23,7 +23,7 @@ public class CustomUserDetailsService implements UserDetailsService {
         try {
             Long userId = Long.parseLong(userIdString);
 
-            return userRepository.findById(userId).orElseThrow(() -> new CustomException(ErrorCode.USER_NOT_FOUND));
+            return userRepository.findByUserId(userId).orElseThrow(() -> new CustomException(ErrorCode.USER_NOT_FOUND));
         } catch (NumberFormatException e) {
             //토큰에 숫자가 아닌 값이 들어왔을 때
             log.warn("Invalid user ID in token: {}", userIdString);
