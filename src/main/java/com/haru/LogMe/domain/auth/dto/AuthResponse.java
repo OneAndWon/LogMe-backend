@@ -32,7 +32,7 @@ public class AuthResponse {
         private final String nickname;
 
         public UserDto(User user) {
-            this.userId = user.getId();
+            this.userId = user.getUserId();
             this.isGuest = user.getIsGuest();
             this.nickname = user.getNickname();
         }

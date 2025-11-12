@@ -13,6 +13,7 @@ import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.User;
 import org.springframework.security.core.userdetails.UserDetails;
+import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.stereotype.Component;
 
 import java.security.Key;
@@ -26,16 +27,19 @@ import java.util.stream.Collectors;
 public class JwtTokenProvider {
     private final Key key;
     private final long accessTokenValidityInMilliseconds;
+    private final UserDetailsService userDetailsService;
 
     private static final String AUTHORITIES_KEY = "auth";
 
     public JwtTokenProvider(
             @Value("${jwt.secret}") String secretKey,
-            @Value("${jwt.access-token-expiration-seconds}") long accessTokenValidityInSeconds) {
+            @Value("${jwt.access-token-expiration-seconds}") long accessTokenValidityInSeconds,
+            UserDetailsService userDetailsService) {
 
         byte[] keyBytes = Decoders.BASE64.decode(secretKey);
         this.key = Keys.hmacShaKeyFor(keyBytes);
         this.accessTokenValidityInMilliseconds = accessTokenValidityInSeconds * 1000;
+        this.userDetailsService = userDetailsService;
     }
 
     /**
@@ -49,8 +53,17 @@ public class JwtTokenProvider {
         long now = (new Date()).getTime();
         Date validity = new Date(now + this.accessTokenValidityInMilliseconds);
 
+        // Principal에서 username(우리의 경우 ID)을 가져옴
+        String subject;
+        if (authentication.getPrincipal() instanceof UserDetails) {
+            UserDetails userDetails = (UserDetails) authentication.getPrincipal();
+            subject = userDetails.getUsername(); // CustomUserDetailsService가 ID를 리턴
+        } else {
+            subject = authentication.getName();
+        }
+
         return Jwts.builder()
-                .setSubject(authentication.getName())
+                .setSubject(subject)
                 .claim(AUTHORITIES_KEY, authorities)
                 .signWith(key, SignatureAlgorithm.HS512)
                 .setExpiration(validity)
@@ -69,7 +82,7 @@ public class JwtTokenProvider {
         Date validity = new Date(now + this.accessTokenValidityInMilliseconds);
 
         return Jwts.builder()
-                .setSubject(user.getUsername()) // UserDetails의 getUsername() 사용
+                .setSubject(String.valueOf(user.getUserId()))
                 .claim(AUTHORITIES_KEY, authorities)
                 .signWith(key, SignatureAlgorithm.HS512) // 기존 방식과 동일하게 HS512
                 .setExpiration(validity)
@@ -92,10 +105,12 @@ public class JwtTokenProvider {
                         .map(SimpleGrantedAuthority::new)
                         .collect(Collectors.toList());
 
-        // UserDetails 객체를 만들어서 Authentication 리턴
-        UserDetails principal = new User(claims.getSubject(), "", authorities);
+        // claims.getSubject()에는 토큰 생성 시 넣은 "userId"가 들어있음.
+        // userDetailsService.loadUserByUsername()가 CustomUserDetailsService의 메서드를 호출.
+        // 반환되는 userDetails는 DB에서 조회한 'com.haru.LogMe.domain.user.entity.User' 객체임.
+        UserDetails userDetails = userDetailsService.loadUserByUsername(claims.getSubject());
 
-        return new UsernamePasswordAuthenticationToken(principal, token, authorities);
+        return new UsernamePasswordAuthenticationToken(userDetails, token, userDetails.getAuthorities());
     }
 
     /**

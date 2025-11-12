@@ -26,7 +26,7 @@ public class User extends BaseTimeEntity implements UserDetails {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "user_id")
-    private Long id;
+    private Long userId;
 
     @Column
     private String email;
@@ -57,9 +57,9 @@ public class User extends BaseTimeEntity implements UserDetails {
     }
 
     @Builder
-    public User(Long id, String email, String nickname,
+    public User(Long userId, String email, String nickname,
                 Boolean isGuest, String deviceId, String socialId, String provider) {
-        this.id = id;
+        this.userId = userId;
         this.email = email;
         this.nickname = nickname;
         this.isGuest = isGuest != null ? isGuest : true;
@@ -98,7 +98,7 @@ public class User extends BaseTimeEntity implements UserDetails {
         if (this.email != null) return this.email;
 
         // 4. (최후 Fallback)
-        return String.valueOf(this.id);
+        return String.valueOf(this.userId);
     }
 
     // 계정 상태 관련 메서드 (일단 모두 true로 반환)
