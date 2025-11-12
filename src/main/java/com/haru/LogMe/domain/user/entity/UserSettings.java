@@ -2,10 +2,7 @@ package com.haru.LogMe.domain.user.entity;
 
 import io.hypersistence.utils.hibernate.type.json.JsonBinaryType;
 import jakarta.persistence.*;
-import lombok.AccessLevel;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.Setter;
+import lombok.*;
 import org.hibernate.annotations.Type;
 
 import java.util.HashMap;
@@ -30,7 +27,10 @@ public class UserSettings {
     @Column(name = "notification_settings", columnDefinition = "jsonb")
     private Map<String, Object> notificationSettings = new HashMap<>();
 
-    public UserSettings(User user) {
+    //
+    @Builder
+    public UserSettings(User user, Map<String, Object> notificationSettings) {
         this.user = user;
+        this.notificationSettings = (notificationSettings != null) ? notificationSettings : new HashMap<>();
     }
 }
