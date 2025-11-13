@@ -19,10 +19,11 @@ public class SwaggerConfig {
                 .description("LogMe API 명세서")
                 .version("v1.0.0");
 
-        // 1. "Bearer" 인증 방식을 SecurityScheme으로 정의
+        // 1. "bearer" 인증 방식을 SecurityScheme으로 정의
+        String jwt = "JWT";
         SecurityScheme bearerAuth = new SecurityScheme()
                 .type(SecurityScheme.Type.HTTP)
-                .scheme("Bearer")
+                .scheme("bearer")
                 .bearerFormat("JWT") // JWT 포맷
                 .in(SecurityScheme.In.HEADER)
                 .name("Authorization"); // 헤더 이름
