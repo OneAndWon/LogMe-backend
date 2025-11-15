@@ -21,6 +21,11 @@ public enum ErrorCode {
 
     // === 투두 (Todo) ===
     TODO_NOT_FOUND(HttpStatus.NOT_FOUND, "T001", "해당 할 일을 찾을 수 없습니다."),
+    SELF_PARENT_NOT_ALLOWED(HttpStatus.BAD_REQUEST, "T002", "자기 자신을 상위 할 일로 지정할 수 없습니다."),
+    PARENT_TODO_NOT_FOUND(HttpStatus.NOT_FOUND, "T003", "상위 할 일을 찾을 수 없습니다."),
+
+    // === 카테고리 (Category) ===
+    CATEGORY_NOT_FOUND(HttpStatus.NOT_FOUND, "CA001", "해당 카테고리를 찾을 수 없습니다."),
 
     // === 서버 (Server) ===
     INTERNAL_SERVER_ERROR(HttpStatus.INTERNAL_SERVER_ERROR, "S001", "서버 내부 오류가 발생했습니다.");
