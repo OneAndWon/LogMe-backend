@@ -32,10 +32,10 @@ public class GlobalExceptionHandler {
 
         log.warn("Validation failed: {}", errorMessage);
 
-        ApiResponse<?> apiResponse = ApiResponse.error("VALIDATION_FAILED", errorMessage);
+        ApiResponse<?> apiResponse = ApiResponse.error(ErrorCode.INVALID_INPUT.getCode(), errorMessage);
 
         return ResponseEntity
-                .status(HttpStatus.BAD_REQUEST) //400 상태 코드
+                .status(ErrorCode.INVALID_INPUT.getHttpStatus()) // ErrorCode의 HttpStatus 사용
                 .body(apiResponse);
     }
 

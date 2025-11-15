@@ -64,6 +64,12 @@ public class SecurityConfig {
                                 "/v3/api-docs/**"    // Swagger 설정 파일 경로
                         ).permitAll()
 
+                        // (추가) 비회원(GUEST) 또는 정회원(USER)만 접근 가능
+                        .requestMatchers(
+                                "/logme/todos/**",   // Todo CRUD
+                                "/logme/users/me"    // 내 정보 조회
+                        ).hasAnyAuthority("ROLE_GUEST", "ROLE_USER")
+
                         // 그 외 모든 요청은 인증 필요
                         .anyRequest().authenticated())
 

@@ -19,7 +19,7 @@ import org.springframework.web.bind.annotation.RestController;
 public class AuthController {
     private final AuthService authService;
 
-    @PostMapping("/quest")
+    @PostMapping("/guest")
     public ResponseEntity<ApiResponse<AuthResponse.TokenDto>> guestLogin(
             @Valid @RequestBody AuthRequest.GuestLoginDto request
             ) {
