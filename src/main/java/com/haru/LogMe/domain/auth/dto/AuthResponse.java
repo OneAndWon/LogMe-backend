@@ -26,7 +26,7 @@ public class AuthResponse {
         private final Long userId;
 
         @Schema(description = "게스트 여부")
-        private final boolean isGuest;
+        private final Boolean isGuest;
 
         @Schema(description = "닉네임", nullable = true)
         private final String nickname;
