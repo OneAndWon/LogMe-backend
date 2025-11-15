@@ -96,7 +96,7 @@ public class TodoService {
         }
 
         // 카테고리도 Id와 UserId로 함께 조회 (소유권 검증)
-        todoCategoryRepository.findByIdAndUserId(categoryId, userId)
+        todoCategoryRepository.findByTodoCategoryIdAfterAndUserId(categoryId, userId)
                 .orElseThrow(() -> new CustomException(ErrorCode.CATEGORY_NOT_FOUND));
     }
 
