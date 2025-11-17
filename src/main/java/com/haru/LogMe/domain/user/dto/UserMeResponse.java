@@ -17,7 +17,7 @@ public class UserMeResponse {
     private String nickname;
 
     @JsonProperty("is_guest") // json 나갈 때 isGuest -> is_guest
-    private boolean isGuest;
+    private Boolean isGuest;
 
     public static UserMeResponse from(User user) {
         return UserMeResponse.builder()
