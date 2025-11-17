@@ -27,6 +27,9 @@ public enum ErrorCode {
     // === 카테고리 (Category) ===
     CATEGORY_NOT_FOUND(HttpStatus.NOT_FOUND, "CA001", "해당 카테고리를 찾을 수 없습니다."),
 
+    // === 일기 (Diary) ===
+    DIARY_NOT_FOUND(HttpStatus.NOT_FOUND, "D001", "해당 날짜의 일기를 찾을 수 없습니다."),
+
     // === 서버 (Server) ===
     INTERNAL_SERVER_ERROR(HttpStatus.INTERNAL_SERVER_ERROR, "S001", "서버 내부 오류가 발생했습니다.");
 
