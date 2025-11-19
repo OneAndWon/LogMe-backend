@@ -66,7 +66,9 @@ public class SecurityConfig {
 
                         // (추가) 비회원(GUEST) 또는 정회원(USER)만 접근 가능
                         .requestMatchers(
-                                "/logme/todos/**",   // Todo CRUD
+                                "/logme/todos/**",   // Todo
+                                "/logme/diaries/**",  // Diary
+                                "/logme/transactions/**", // Transaction
                                 "/logme/users/me"    // 내 정보 조회
                         ).hasAnyAuthority("ROLE_GUEST", "ROLE_USER")
 

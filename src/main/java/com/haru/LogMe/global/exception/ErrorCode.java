@@ -30,6 +30,12 @@ public enum ErrorCode {
     // === 일기 (Diary) ===
     DIARY_NOT_FOUND(HttpStatus.NOT_FOUND, "D001", "해당 날짜의 일기를 찾을 수 없습니다."),
 
+    //=== 가계부 (Budget/Transaction) ===
+    ASSET_NOT_FOUND(HttpStatus.NOT_FOUND, "B001", "해당 자산을 찾을 수 없습니다."),
+    FINANCE_CATEGORY_NOT_FOUND(HttpStatus.NOT_FOUND, "B002", "해당 카테고리를 찾을 수 없습니다."),
+    TRANSACTION_NOT_FOUND(HttpStatus.NOT_FOUND, "B003", "해당 거래 내역을 찾을 수 없습니다."),
+    TRANSACTION_ACCESS_DENIED(HttpStatus.FORBIDDEN, "B004", "거래 내역에 접근할 권한이 없습니다."),
+
     // === 서버 (Server) ===
     INTERNAL_SERVER_ERROR(HttpStatus.INTERNAL_SERVER_ERROR, "S001", "서버 내부 오류가 발생했습니다.");
 
