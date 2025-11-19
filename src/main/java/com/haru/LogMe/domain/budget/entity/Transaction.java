@@ -1,5 +1,6 @@
 package com.haru.LogMe.domain.budget.entity;
 
+import com.haru.LogMe.domain.common.BaseTimeEntity;
 import com.haru.LogMe.domain.user.entity.User;
 import jakarta.persistence.*;
 import lombok.AccessLevel;
@@ -14,7 +15,7 @@ import java.time.LocalDateTime;
 @Getter
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @Table(name = "transaction")
-public class Transaction {
+public class Transaction extends BaseTimeEntity { // 상속 추가
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "transaction_id")
@@ -39,7 +40,7 @@ public class Transaction {
     private BigDecimal amount;
 
     @Column(nullable = false)
-    private LocalDateTime date;
+    private LocalDateTime date; // 실제 소비/수입 날짜
 
     private String description;
 

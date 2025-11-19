@@ -23,17 +23,17 @@ public class DiaryResponse {
 
         private LocalDate date;
 
-        @JsonProperty("content_text") // 명세서 반영
+        @JsonProperty("content_text")
         private String content;
 
-        @JsonProperty("emotion_icon") // 명세서 반영
+        @JsonProperty("emotion_icon")
         private String emotionIcon;
 
         private List<AttachmentDto> attachments;
 
         public Detail(Diary diary) {
             this.diaryId = diary.getDiaryId();
-            this.userId = diary.getUserId();
+            this.userId = diary.getUser().getUserId(); // [수정] User 객체에서 ID 추출
             this.date = diary.getDate();
             this.content = diary.getContent();
             this.emotionIcon = diary.getEmotionIcon();
@@ -43,7 +43,6 @@ public class DiaryResponse {
         }
     }
 
-    // === 2. 목록 조회용 (경량 데이터 - 캘린더 뷰) ===
     @Getter
     public static class Summary {
         @JsonProperty("diary_id")
@@ -61,7 +60,6 @@ public class DiaryResponse {
         }
     }
 
-    // === 첨부파일 DTO ===
     @Getter
     public static class AttachmentDto {
         @JsonProperty("attachment_id")
