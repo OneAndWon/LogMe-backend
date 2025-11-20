@@ -5,6 +5,7 @@ import com.haru.LogMe.domain.diary.dto.DiaryRequest;
 import com.haru.LogMe.domain.diary.dto.DiaryResponse;
 import com.haru.LogMe.domain.diary.entity.Diary;
 import com.haru.LogMe.domain.diary.entity.DiaryAttachment;
+import com.haru.LogMe.domain.user.entity.User;
 import com.haru.LogMe.global.exception.CustomException;
 import com.haru.LogMe.global.exception.ErrorCode;
 import lombok.RequiredArgsConstructor;
@@ -24,8 +25,7 @@ public class DiaryService {
 
     // 1. 일기 생성 및 수정 (Upsert)
     @Transactional
-    public DiaryResponse.Detail upsertDiary(Long userId, DiaryRequest dto) {
-        // (기존 로직 유지)
+    public DiaryResponse.Detail upsertDiary(User user, DiaryRequest dto) {
         List<DiaryAttachment> newAttachments = (dto.getAttachments() == null) ?
                 List.of() :
                 dto.getAttachments().stream()
@@ -35,14 +35,14 @@ public class DiaryService {
                                 .build())
                         .collect(Collectors.toList());
 
-        Diary diary = diaryRepository.findByUserIdAndDate(userId, dto.getDate())
+        Diary diary = diaryRepository.findByUserAndDate(user, dto.getDate())
                 .map(existingDiary -> {
                     existingDiary.update(dto.getContent(), dto.getEmotionIcon(), newAttachments);
                     return existingDiary;
                 })
                 .orElseGet(() -> {
                     Diary newDiary = Diary.builder()
-                            .userId(userId)
+                            .user(user)
                             .date(dto.getDate())
                             .content(dto.getContent())
                             .emotionIcon(dto.getEmotionIcon())
@@ -57,35 +57,33 @@ public class DiaryService {
     }
 
     // 2. 일기 목록 조회 (캘린더 뷰) - 반환 타입 변경 (Detail -> Summary)
-    public List<DiaryResponse.Summary> getDiaries(Long userId, String monthParam) {
-        // "2025-11" 같은 문자열을 파싱
-         YearMonth yearMonth;
+    public List<DiaryResponse.Summary> getDiaries(User user, String monthParam) {
+        YearMonth yearMonth;
         try {
-            yearMonth = YearMonth.parse(monthParam); // YYYY-MM 형식 파싱
+            yearMonth = YearMonth.parse(monthParam);
         } catch (Exception e) {
-            // 형식이 틀리면 400 Bad Request
             throw new CustomException(ErrorCode.INVALID_INPUT);
         }
 
         LocalDate startDate = yearMonth.atDay(1);
         LocalDate endDate = yearMonth.atEndOfMonth();
 
-        return diaryRepository.findAllByUserIdAndDateBetweenOrderByDateAsc(userId, startDate, endDate).stream()
-                .map(DiaryResponse.Summary::new) // Summary DTO로 변환
+        return diaryRepository.findAllByUserAndDateBetweenOrderByDateAsc(user, startDate, endDate).stream()
+                .map(DiaryResponse.Summary::new)
                 .collect(Collectors.toList());
     }
 
     // 3. 상세 조회
-    public DiaryResponse.Detail getDiaryByDate(Long userId, LocalDate date) {
-        Diary diary = diaryRepository.findByUserIdAndDate(userId, date)
+    public DiaryResponse.Detail getDiaryByDate(User user, LocalDate date) {
+        Diary diary = diaryRepository.findByUserAndDate(user, date)
                 .orElseThrow(() -> new CustomException(ErrorCode.DIARY_NOT_FOUND));
         return new DiaryResponse.Detail(diary);
     }
 
     // 4. 삭제
     @Transactional
-    public void deleteDiary(Long userId, LocalDate date) {
-        Diary diary = diaryRepository.findByUserIdAndDate(userId, date)
+    public void deleteDiary(User user, LocalDate date) {
+        Diary diary = diaryRepository.findByUserAndDate(user, date)
                 .orElseThrow(() -> new CustomException(ErrorCode.DIARY_NOT_FOUND));
         diaryRepository.delete(diary);
     }

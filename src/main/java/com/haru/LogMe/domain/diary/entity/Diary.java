@@ -1,6 +1,7 @@
 package com.haru.LogMe.domain.diary.entity;
 
 import com.haru.LogMe.domain.common.BaseTimeEntity;
+import com.haru.LogMe.domain.user.entity.User;
 import jakarta.persistence.*;
 import lombok.Builder;
 import lombok.Getter;
@@ -25,8 +26,9 @@ public class Diary extends BaseTimeEntity {
     @Column(name = "diary_id")
     private Long diaryId;
 
-    @Column(name = "user_id", nullable = false)
-    private Long userId;
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "user_id", nullable = false)
+    private User user;
 
     @Column(nullable = false)
     private LocalDate date;
@@ -42,8 +44,8 @@ public class Diary extends BaseTimeEntity {
     private List<DiaryAttachment> attachments = new ArrayList<>();
 
     @Builder
-    public Diary(Long userId, LocalDate date, String content, String emotionIcon) {
-        this.userId = userId;
+    public Diary(User user, LocalDate date, String content, String emotionIcon) {
+        this.user = user;
         this.date = date;
         this.content = content;
         this.emotionIcon = emotionIcon;

@@ -1,13 +1,16 @@
 package com.haru.LogMe.domain.todo.repository;
 
 import com.haru.LogMe.domain.todo.entity.Todo;
+import com.haru.LogMe.domain.user.entity.User;
 import org.springframework.data.jpa.repository.JpaRepository;
 
 import java.util.List;
 import java.util.Optional;
 
 public interface TodoRepository extends JpaRepository<Todo, Long> {
-    List<Todo> findAllByUserIdOrderByDueDateAsc(Long userId);
+    // User 객체로 조회
+    List<Todo> findAllByUserOrderByDueDateAsc(User user);
 
-    Optional<Todo> findByIdAndUserId(Long todoId, Long userId);
+    // ID와 User 객체로 조회
+    Optional<Todo> findByIdAndUser(Long todoId, User user);
 }

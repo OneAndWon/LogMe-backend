@@ -28,8 +28,7 @@ public class TodoController {
     public ApiResponse<TodoResponse> createTodo(
             @AuthenticationPrincipal User user,
             @Valid @RequestBody TodoRequest dto) {
-        Long userId = user.getUserId();
-        return ApiResponse.ok(todoService.createTodo(userId,dto));
+        return ApiResponse.ok(todoService.createTodo(user,dto));
     }
 
     // 2. 목록 조회
@@ -38,8 +37,7 @@ public class TodoController {
     public ApiResponse<Map<String, Object>> getTodos(
             @Parameter(hidden = true) @AuthenticationPrincipal User user
     ) {
-        Long userId = user.getUserId();
-        List<TodoResponse> list = todoService.getTodos(userId);
+        List<TodoResponse> list = todoService.getTodos(user);
 
         Map<String, Object> data = new HashMap<>();
         data.put("content", list);
@@ -56,8 +54,7 @@ public class TodoController {
             @PathVariable Long todoId,
             @Valid @RequestBody TodoRequest dto
     ) {
-        Long userId = user.getUserId();
-        return ApiResponse.ok(todoService.updateTodo(userId, todoId, dto));
+        return ApiResponse.ok(todoService.updateTodo(user, todoId, dto));
     }
 
     // 4. 삭제
@@ -67,8 +64,7 @@ public class TodoController {
             @Parameter(hidden = true) @AuthenticationPrincipal User user,
             @PathVariable Long todoId
     ) {
-        Long userId = user.getUserId();
-        todoService.deleteTodo(userId, todoId);
+        todoService.deleteTodo(user, todoId);
 
         Map<String, String> data = new HashMap<>();
         data.put("message", "할 일이 삭제되었습니다.");

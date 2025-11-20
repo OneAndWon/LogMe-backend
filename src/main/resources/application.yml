@@ -51,7 +51,8 @@ spring:
   jpa:
     database-platform: org.hibernate.dialect.PostgreSQLDialect
     hibernate:
-      ddl-auto: update
+      # ddl-auto: update
+      ddl-auto: create
     properties:
       hibernate:
         # SQL 쿼리를 터미널에서 보기 편하게 포맷팅
