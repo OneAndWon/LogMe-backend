@@ -11,6 +11,7 @@ import com.haru.LogMe.global.exception.ErrorCode;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.util.StringUtils;
 
 import java.util.List;
 import java.util.stream.Collectors;
@@ -24,6 +25,11 @@ public class TodoService {
     // 1. 생성
     @Transactional
     public TodoResponse createTodo(User user, TodoRequest dto) {
+
+        if (!StringUtils.hasText(dto.getTitle())) {
+            throw new CustomException(ErrorCode.TODO_TITLE_EMPTY);
+        }
+
         validateCategory(user.getUserId(), dto.getCategoryId());
         validateParentTodo(user, dto.getParentTodoId(), null);
 

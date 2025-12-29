@@ -23,6 +23,7 @@ public enum ErrorCode {
     TODO_NOT_FOUND(HttpStatus.NOT_FOUND, "T001", "해당 할 일을 찾을 수 없습니다."),
     SELF_PARENT_NOT_ALLOWED(HttpStatus.BAD_REQUEST, "T002", "자기 자신을 상위 할 일로 지정할 수 없습니다."),
     PARENT_TODO_NOT_FOUND(HttpStatus.NOT_FOUND, "T003", "상위 할 일을 찾을 수 없습니다."),
+    TODO_TITLE_EMPTY(HttpStatus.BAD_REQUEST, "T004", "할 일의 제목은 비어 있을 수 없습니다."),
 
     // === 카테고리 (Category) ===
     CATEGORY_NOT_FOUND(HttpStatus.NOT_FOUND, "CA001", "해당 카테고리를 찾을 수 없습니다."),
