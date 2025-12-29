@@ -1,12 +1,15 @@
 package com.haru.LogMe.domain.todo.dto;
 
+import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.haru.LogMe.domain.todo.entity.Todo;
 import lombok.Getter;
 
 import java.time.LocalDateTime;
+import java.util.List;
 
 @Getter
+@JsonInclude(JsonInclude.Include.NON_NULL)
 public class TodoResponse {
     @JsonProperty("todo_id")
     private Long todoId;
@@ -41,6 +44,9 @@ public class TodoResponse {
     @JsonProperty("updated_at")
     private LocalDateTime updatedAt;
 
+    @JsonProperty("sub_todos")
+    private List<TodoResponse> subTodos; // 하위 할 일 목록
+
     public TodoResponse(Todo todo) {
         this.todoId = todo.getId();
         this.userId = todo.getUser().getUserId();
@@ -54,5 +60,10 @@ public class TodoResponse {
         this.recurringRule = todo.getRecurringRule();
         this.createdAt = todo.getCreatedAt();
         this.updatedAt = todo.getUpdatedAt();
+    }
+
+    //하위 할 일 목록을 세팅하는 편의 메서드
+    public void setSubTodos(List<TodoResponse> subTodos) {
+        this.subTodos = subTodos;
     }
 }

@@ -71,4 +71,14 @@ public class TodoController {
 
         return ApiResponse.ok(data);
     }
+
+    // 5. 상세 조회
+    @Operation(summary = "할 일 상세 조회", description = "특정 할 일의 상세 정보를 조회합니다.")
+    @GetMapping("/{todoId}")
+    public ApiResponse<TodoResponse> getTodoDetail(
+            @Parameter(hidden = true) @AuthenticationPrincipal User user,
+            @PathVariable Long todoId
+    ) {
+        return ApiResponse.ok(todoService.getTodoDetail(user, todoId));
+    }
 }

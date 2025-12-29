@@ -6,5 +6,5 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import java.util.Optional;
 
 public interface TodoCategoryRepository extends JpaRepository<TodoCategory, Long> {
-    Optional<TodoCategory> findByTodoCategoryIdAfterAndUserId(Long todoCategoryId, Long userId);
+    Optional<TodoCategory> findByTodoCategoryIdAndUserId(Long todoCategoryId, Long userId);
 }
