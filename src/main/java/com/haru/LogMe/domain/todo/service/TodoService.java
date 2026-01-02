@@ -30,7 +30,7 @@ public class TodoService {
             throw new CustomException(ErrorCode.TODO_TITLE_EMPTY);
         }
 
-        validateCategory(user.getUserId(), dto.getCategoryId());
+        validateCategory(user, dto.getCategoryId());
         validateParentTodo(user, dto.getParentTodoId(), null);
 
         Todo todo = Todo.builder()
@@ -61,7 +61,7 @@ public class TodoService {
         Todo todo = todoRepository.findByIdAndUser(todoId, user)
                 .orElseThrow(() -> new CustomException(ErrorCode.TODO_NOT_FOUND));
 
-        validateCategory(user.getUserId(), dto.getCategoryId());
+        validateCategory(user, dto.getCategoryId());
         validateParentTodo(user, dto.getParentTodoId(), todoId);
 
         todo.update(
@@ -112,9 +112,9 @@ public class TodoService {
     /**
      * 카테고리가 존재하며, 해당 유저의 소유인지 검증
      */
-    private void validateCategory(Long userId, Long categoryId) {
+    private void validateCategory(User user, Long categoryId) {
         if (categoryId == null) return;
-        todoCategoryRepository.findByTodoCategoryIdAndUserId(categoryId, userId)
+        todoCategoryRepository.findByTodoCategoryIdAndUser(categoryId, user)
                 .orElseThrow(() -> new CustomException(ErrorCode.CATEGORY_NOT_FOUND));
     }
 
