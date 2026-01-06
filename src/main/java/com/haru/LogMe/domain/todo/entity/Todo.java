@@ -72,4 +72,7 @@ public class Todo extends BaseTimeEntity {
         if (recurringRule != null) this.recurringRule = recurringRule;
     }
 
+    public void removeCategory() {
+        this.categoryId = null;
+    }
 }

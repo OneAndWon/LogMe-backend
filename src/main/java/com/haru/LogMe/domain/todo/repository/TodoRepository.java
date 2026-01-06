@@ -13,4 +13,10 @@ public interface TodoRepository extends JpaRepository<Todo, Long> {
 
     // ID와 User 객체로 조회
     Optional<Todo> findByIdAndUser(Long todoId, User user);
+
+    // 부모 할 일 ID로 조회
+    List<Todo> findAllByParentTodoId(Long parentTodoId);
+
+    // 카테고리 ID로 조회 - 카테고리 삭제 시 사용
+    List<Todo> findAllByCategoryId(Long categoryId);
 }

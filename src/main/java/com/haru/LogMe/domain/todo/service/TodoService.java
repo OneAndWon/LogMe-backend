@@ -11,6 +11,7 @@ import com.haru.LogMe.global.exception.ErrorCode;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.util.StringUtils;
 
 import java.util.List;
 import java.util.stream.Collectors;
@@ -24,7 +25,12 @@ public class TodoService {
     // 1. 생성
     @Transactional
     public TodoResponse createTodo(User user, TodoRequest dto) {
-        validateCategory(user.getUserId(), dto.getCategoryId());
+
+        if (!StringUtils.hasText(dto.getTitle())) {
+            throw new CustomException(ErrorCode.TODO_TITLE_EMPTY);
+        }
+
+        validateCategory(user, dto.getCategoryId());
         validateParentTodo(user, dto.getParentTodoId(), null);
 
         Todo todo = Todo.builder()
@@ -55,7 +61,7 @@ public class TodoService {
         Todo todo = todoRepository.findByIdAndUser(todoId, user)
                 .orElseThrow(() -> new CustomException(ErrorCode.TODO_NOT_FOUND));
 
-        validateCategory(user.getUserId(), dto.getCategoryId());
+        validateCategory(user, dto.getCategoryId());
         validateParentTodo(user, dto.getParentTodoId(), todoId);
 
         todo.update(
@@ -81,12 +87,34 @@ public class TodoService {
         todoRepository.delete(todo);
     }
 
+    //5. 상세 조회
+    @Transactional(readOnly = true)
+    public TodoResponse getTodoDetail(User user, Long todoId) {
+        // 메인 투두 조회 및 검증
+        Todo todo = todoRepository.findByIdAndUser(todoId, user)
+                .orElseThrow(() -> new CustomException(ErrorCode.TODO_NOT_FOUND));
+
+        // 응답 DTO 생성
+        TodoResponse todoResponse = new TodoResponse(todo);
+
+        // 하위 투두 조회 및 변환
+        List<TodoResponse> subTodos = todoRepository.findAllByParentTodoId(todoId)
+                .stream()
+                .map(TodoResponse::new)
+                .collect(Collectors.toList());
+
+        //DTO에 하위 투두 설정
+        todoResponse.setSubTodos(subTodos);
+
+        return todoResponse;
+    }
+
     /**
      * 카테고리가 존재하며, 해당 유저의 소유인지 검증
      */
-    private void validateCategory(Long userId, Long categoryId) {
+    private void validateCategory(User user, Long categoryId) {
         if (categoryId == null) return;
-        todoCategoryRepository.findByTodoCategoryIdAfterAndUserId(categoryId, userId)
+        todoCategoryRepository.findByTodoCategoryIdAndUser(categoryId, user)
                 .orElseThrow(() -> new CustomException(ErrorCode.CATEGORY_NOT_FOUND));
     }
 
