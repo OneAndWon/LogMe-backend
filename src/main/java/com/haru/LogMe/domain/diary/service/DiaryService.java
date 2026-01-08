@@ -8,7 +8,7 @@ import com.haru.LogMe.domain.diary.entity.DiaryAttachment;
 import com.haru.LogMe.domain.user.entity.User;
 import com.haru.LogMe.global.exception.CustomException;
 import com.haru.LogMe.global.exception.ErrorCode;
-import com.haru.LogMe.global.util.FileStore;
+import com.haru.LogMe.global.util.LocalFileStore;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -25,7 +25,7 @@ import java.util.stream.Collectors;
 public class DiaryService {
 
     private final DiaryRepository diaryRepository;
-    private final FileStore fileStore;
+    private final LocalFileStore localFileStore;
 
     // 1. 일기 생성 및 수정 (Upsert)
     @Transactional
@@ -95,7 +95,7 @@ public class DiaryService {
         if (!diary.getAttachments().isEmpty()) {
             // 물리 파일 먼저 삭제
             for (DiaryAttachment old : diary.getAttachments()) {
-                fileStore.deleteFile(old.getFileUrl());
+                localFileStore.deleteFile(old.getFileUrl());
             }
             // DB 연관관계 끊기 (삭제)
             diary.getAttachments().clear();
@@ -104,7 +104,7 @@ public class DiaryService {
         // 3. 새 파일 저장
         String storedFilePath;
         try {
-            storedFilePath = fileStore.storeFile(file);
+            storedFilePath = localFileStore.storeFile(file);
         } catch (IOException e) {
             // 파일 저장 실패 시 예외 발생 (CustomException에 FILE_UPLOAD_ERROR 추가 필요)
             throw new CustomException(ErrorCode.FILE_UPLOAD_ERROR);
@@ -131,7 +131,7 @@ public class DiaryService {
 
         if (!diary.getAttachments().isEmpty()) {
             // 물리 파일 삭제
-            diary.getAttachments().forEach(a -> fileStore.deleteFile(a.getFileUrl()));
+            diary.getAttachments().forEach(a -> localFileStore.deleteFile(a.getFileUrl()));
             // DB 데이터 삭제
             diary.getAttachments().clear();
         }
