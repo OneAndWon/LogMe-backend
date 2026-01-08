@@ -8,10 +8,13 @@ import com.haru.LogMe.domain.diary.entity.DiaryAttachment;
 import com.haru.LogMe.domain.user.entity.User;
 import com.haru.LogMe.global.exception.CustomException;
 import com.haru.LogMe.global.exception.ErrorCode;
+import com.haru.LogMe.global.util.FileStore;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.multipart.MultipartFile;
 
+import java.io.IOException;
 import java.time.LocalDate;
 import java.time.YearMonth;
 import java.util.List;
@@ -22,34 +25,26 @@ import java.util.stream.Collectors;
 public class DiaryService {
 
     private final DiaryRepository diaryRepository;
+    private final FileStore fileStore;
 
     // 1. 일기 생성 및 수정 (Upsert)
     @Transactional
     public DiaryResponse.Detail upsertDiary(User user, DiaryRequest dto) {
-        List<DiaryAttachment> newAttachments = (dto.getAttachments() == null) ?
-                List.of() :
-                dto.getAttachments().stream()
-                        .map(a -> DiaryAttachment.builder()
-                                .fileUrl(a.getFileUrl())
-                                .fileType(a.getFileType())
-                                .build())
-                        .collect(Collectors.toList());
 
         Diary diary = diaryRepository.findByUserAndDate(user, dto.getDate())
                 .map(existingDiary -> {
-                    existingDiary.update(dto.getContent(), dto.getEmotionIcon(), newAttachments);
+                    // 수정 시: 내용과 이모티콘만 업데이트 (사진 건드리지 않음!)
+                    existingDiary.update(dto.getContent(), dto.getEmotionIcon());
                     return existingDiary;
                 })
                 .orElseGet(() -> {
+                    // 생성 시: 내용과 이모티콘만으로 생성
                     Diary newDiary = Diary.builder()
                             .user(user)
                             .date(dto.getDate())
                             .content(dto.getContent())
                             .emotionIcon(dto.getEmotionIcon())
                             .build();
-                    for (DiaryAttachment attachment : newAttachments) {
-                        newDiary.addAttachment(attachment);
-                    }
                     return diaryRepository.save(newDiary);
                 });
 
@@ -86,5 +81,59 @@ public class DiaryService {
         Diary diary = diaryRepository.findByUserAndDate(user, date)
                 .orElseThrow(() -> new CustomException(ErrorCode.DIARY_NOT_FOUND));
         diaryRepository.delete(diary);
+    }
+
+    // 5. 첨부파일 업로드
+    @Transactional
+    public String uploadDiaryImage(User user, LocalDate date, MultipartFile file) {
+        // 1. 일기 조회
+        Diary diary = diaryRepository.findByUserAndDate(user, date)
+                .orElseThrow(() -> new CustomException(ErrorCode.DIARY_NOT_FOUND));
+
+        // 2. 기존 이미지가 있다면 삭제 (1:1 유지를 위해)
+        // orphanRemoval = true 설정 덕분에 list.clear()시 DB에서도 삭제됨
+        if (!diary.getAttachments().isEmpty()) {
+            // 물리 파일 먼저 삭제
+            for (DiaryAttachment old : diary.getAttachments()) {
+                fileStore.deleteFile(old.getFileUrl());
+            }
+            // DB 연관관계 끊기 (삭제)
+            diary.getAttachments().clear();
+        }
+
+        // 3. 새 파일 저장
+        String storedFilePath;
+        try {
+            storedFilePath = fileStore.storeFile(file);
+        } catch (IOException e) {
+            // 파일 저장 실패 시 예외 발생 (CustomException에 FILE_UPLOAD_ERROR 추가 필요)
+            throw new CustomException(ErrorCode.FILE_UPLOAD_ERROR);
+        }
+
+        // 4. 엔티티 생성 및 연결
+        if (storedFilePath != null) {
+            DiaryAttachment newAttachment = DiaryAttachment.builder()
+                    .fileUrl(storedFilePath)
+                    .fileType("IMAGE") // 필요 시 file.getContentType() 사용
+                    .build();
+
+            diary.addAttachment(newAttachment);
+        }
+
+        return storedFilePath;
+    }
+
+    //6. 첨부파일 삭제
+    @Transactional
+    public void deleteDiaryImage(User user, LocalDate date) {
+        Diary diary = diaryRepository.findByUserAndDate(user, date)
+                .orElseThrow(() -> new CustomException(ErrorCode.DIARY_NOT_FOUND));
+
+        if (!diary.getAttachments().isEmpty()) {
+            // 물리 파일 삭제
+            diary.getAttachments().forEach(a -> fileStore.deleteFile(a.getFileUrl()));
+            // DB 데이터 삭제
+            diary.getAttachments().clear();
+        }
     }
 }
