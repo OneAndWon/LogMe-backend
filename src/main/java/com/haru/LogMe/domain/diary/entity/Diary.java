@@ -54,17 +54,9 @@ public class Diary extends BaseTimeEntity {
     // --- 비즈니스 로직 ---
 
     // 내용 수정 및 첨부파일 교체 (Upsert용)
-    public void update(String content, String emotionIcon, List<DiaryAttachment> newAttachments) {
+    public void update(String content, String emotionIcon) {
         this.content = content;
         this.emotionIcon = emotionIcon;
-
-        // 기존 첨부파일 리스트를 비우고 새로운 리스트로 교체 (orphanRemoval 동작)
-        this.attachments.clear();
-        if (newAttachments != null) {
-            for (DiaryAttachment attachment : newAttachments) {
-                this.addAttachment(attachment); // 편의 메서드 호출
-            }
-        }
     }
 
     // 연관관계 편의 메서드

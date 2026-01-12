@@ -29,17 +29,21 @@ public class DiaryResponse {
         @JsonProperty("emotion_icon")
         private String emotionIcon;
 
-        private List<AttachmentDto> attachments;
+        private AttachmentDto attachment;
 
         public Detail(Diary diary) {
             this.diaryId = diary.getDiaryId();
-            this.userId = diary.getUser().getUserId(); // [수정] User 객체에서 ID 추출
+            this.userId = diary.getUser().getUserId();
             this.date = diary.getDate();
             this.content = diary.getContent();
             this.emotionIcon = diary.getEmotionIcon();
-            this.attachments = diary.getAttachments().stream()
-                    .map(AttachmentDto::new)
-                    .collect(Collectors.toList());
+
+            // 리스트에서 첫 번째 사진만 꺼내거나 없으면 null 처리
+            if (!diary.getAttachments().isEmpty()) {
+                this.attachment = new AttachmentDto(diary.getAttachments().get(0));
+            } else {
+                this.attachment = null;
+            }
         }
     }
 

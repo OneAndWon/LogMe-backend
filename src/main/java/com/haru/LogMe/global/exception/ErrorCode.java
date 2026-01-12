@@ -11,6 +11,7 @@ public enum ErrorCode {
     // === 공통 에러 (Common) ===
     BAD_REQUEST(HttpStatus.BAD_REQUEST, "C001", "잘못된 요청입니다."),
     INVALID_INPUT(HttpStatus.BAD_REQUEST, "C002", "입력값이 유효하지 않습니다."),
+    FILE_UPLOAD_ERROR(HttpStatus.INTERNAL_SERVER_ERROR, "C003", "파일 업로드 중 오류가 발생했습니다."),
 
     // === 인증/인가 (Auth) ===
     INVALID_ACCESSTOKEN(HttpStatus.UNAUTHORIZED, "A001", "유효하지 않은 접근입니다."),
