@@ -68,7 +68,15 @@ public class TransactionService {
         return ListResponse.of(list);
     }
 
-    // 3. 수정
+    // 3. 거래 내역 상세 조회
+    public TransactionResponse getTransactionDetail(Long transactionId, User user) {
+        Transaction transaction = transactionRepository.findByTransactionIdAndUser(transactionId, user)
+                .orElseThrow(() -> new CustomException(ErrorCode.TRANSACTION_NOT_FOUND));
+
+        return TransactionResponse.from(transaction);
+    }
+
+    // 4. 수정
     @Transactional
     public TransactionResponse updateTransaction(Long transactionId, User user, TransactionRequest.UpdateDto request) {
         Transaction transaction = transactionRepository.findByTransactionIdAndUser(transactionId, user)
@@ -102,7 +110,7 @@ public class TransactionService {
         return TransactionResponse.from(transaction);
     }
 
-    // 4. 삭제
+    // 5. 삭제
     @Transactional
     public void deleteTransaction(Long transactionId, User user) {
         Transaction transaction = transactionRepository.findByTransactionIdAndUser(transactionId, user)

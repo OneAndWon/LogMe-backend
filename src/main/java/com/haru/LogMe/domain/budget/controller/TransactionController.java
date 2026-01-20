@@ -37,7 +37,16 @@ public class TransactionController {
         return ApiResponse.ok(transactionService.getTransactions(user));
     }
 
-    // 3. 수정
+    // 3. 상세 조회
+    @GetMapping("/{transactionId}")
+    public ApiResponse<TransactionResponse> getTransactionDetail(
+            @PathVariable Long transactionId,
+            @AuthenticationPrincipal User user) {
+
+        return ApiResponse.ok(transactionService.getTransactionDetail(transactionId, user));
+    }
+
+    // 4. 수정
     @PutMapping("/{transactionId}")
     public ApiResponse<TransactionResponse> updateTransaction(
             @PathVariable Long transactionId,
@@ -48,7 +57,7 @@ public class TransactionController {
         return ApiResponse.ok(response);
     }
 
-    // 4. 삭제
+    // 5. 삭제
     @DeleteMapping("/{transactionId}")
     public ApiResponse<Void> deleteTransaction(
             @PathVariable Long transactionId,
