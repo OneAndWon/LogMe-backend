@@ -7,6 +7,7 @@ import com.haru.LogMe.domain.budget.repository.FinanceCategoryRepository;
 import com.haru.LogMe.domain.user.entity.User;
 import com.haru.LogMe.global.exception.CustomException;
 import com.haru.LogMe.global.exception.ErrorCode;
+import com.haru.LogMe.global.response.ListResponse;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -35,12 +36,13 @@ public class FinanceCategoryService {
     }
 
     //카테고리 목록 조회
-    public List<FinanceCategoryResponse> getCategories(User user, String type) {
-        // 유저의 모든 카테고리를 조회한 후, type(수입/지출)이 있으면 필터링
-        return categoryRepository.findAllByUser(user).stream()
+    public ListResponse<FinanceCategoryResponse> getCategories(User user, String type) {
+        List<FinanceCategoryResponse> list = categoryRepository.findAllByUser(user).stream()
                 .filter(category -> type == null || category.getType().equalsIgnoreCase(type))
                 .map(FinanceCategoryResponse::from)
                 .collect(Collectors.toList());
+
+        return ListResponse.of(list);
     }
 
     // 3. 카테고리 수정

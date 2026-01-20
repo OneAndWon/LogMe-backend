@@ -8,6 +8,7 @@ import com.haru.LogMe.domain.diary.entity.DiaryAttachment;
 import com.haru.LogMe.domain.user.entity.User;
 import com.haru.LogMe.global.exception.CustomException;
 import com.haru.LogMe.global.exception.ErrorCode;
+import com.haru.LogMe.global.response.ListResponse;
 import com.haru.LogMe.global.util.LocalFileStore;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -52,7 +53,7 @@ public class DiaryService {
     }
 
     // 2. 일기 목록 조회 (캘린더 뷰) - 반환 타입 변경 (Detail -> Summary)
-    public List<DiaryResponse.Summary> getDiaries(User user, String monthParam) {
+    public ListResponse<DiaryResponse.Summary> getDiaries(User user, String monthParam) {
         YearMonth yearMonth;
         try {
             yearMonth = YearMonth.parse(monthParam);
@@ -63,9 +64,11 @@ public class DiaryService {
         LocalDate startDate = yearMonth.atDay(1);
         LocalDate endDate = yearMonth.atEndOfMonth();
 
-        return diaryRepository.findAllByUserAndDateBetweenOrderByDateAsc(user, startDate, endDate).stream()
+        List<DiaryResponse.Summary> list = diaryRepository.findAllByUserAndDateBetweenOrderByDateAsc(user, startDate, endDate).stream()
                 .map(DiaryResponse.Summary::new)
                 .collect(Collectors.toList());
+
+        return ListResponse.of(list);
     }
 
     // 3. 상세 조회

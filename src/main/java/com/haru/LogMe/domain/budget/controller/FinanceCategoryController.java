@@ -5,6 +5,7 @@ import com.haru.LogMe.domain.budget.dto.FinanceCategoryResponse;
 import com.haru.LogMe.domain.budget.service.FinanceCategoryService;
 import com.haru.LogMe.domain.user.entity.User;
 import com.haru.LogMe.global.response.ApiResponse;
+import com.haru.LogMe.global.response.ListResponse;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
@@ -18,7 +19,7 @@ import java.util.List;
 public class FinanceCategoryController {
     private final FinanceCategoryService categoryService;
 
-    //생성
+    // 1. 생성
     @PostMapping
     public ApiResponse<FinanceCategoryResponse> createCategory(
             @AuthenticationPrincipal User user,
@@ -27,16 +28,16 @@ public class FinanceCategoryController {
         return ApiResponse.ok(categoryService.createCategory(user, request));
     }
 
-    //목록 조회 (Query Parameter: ?type=EXPENSE)
+    // 2. 목록 조회 (Query Parameter: ?type=EXPENSE)
     @GetMapping
-    public ApiResponse<List<FinanceCategoryResponse>> getCategories(
+    public ApiResponse<ListResponse<FinanceCategoryResponse>> getCategories(
             @AuthenticationPrincipal User user,
             @RequestParam(required = false) String type) {
 
         return ApiResponse.ok(categoryService.getCategories(user, type));
     }
 
-    //수정
+    // 3. 수정
     @PutMapping("/{categoryId}")
     public ApiResponse<FinanceCategoryResponse> updateCategory(
             @PathVariable Long categoryId,
@@ -46,7 +47,7 @@ public class FinanceCategoryController {
         return ApiResponse.ok(categoryService.updateCategory(categoryId, user, request));
     }
 
-    //삭제
+    // 4. 삭제
     @DeleteMapping("/{categoryId}")
     public ApiResponse<Void> deleteCategory(
             @PathVariable Long categoryId,

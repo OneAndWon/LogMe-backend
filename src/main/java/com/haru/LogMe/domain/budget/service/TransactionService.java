@@ -11,6 +11,7 @@ import com.haru.LogMe.domain.budget.repository.TransactionRepository;
 import com.haru.LogMe.domain.user.entity.User;
 import com.haru.LogMe.global.exception.CustomException;
 import com.haru.LogMe.global.exception.ErrorCode;
+import com.haru.LogMe.global.response.ListResponse;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -59,10 +60,12 @@ public class TransactionService {
     }
 
     // 2. 목록 조회
-    public List<TransactionResponse> getTransactions(User user) {
-        return transactionRepository.findAllByUserOrderByDateDesc(user).stream()
+    public ListResponse<TransactionResponse> getTransactions(User user) {
+        List<TransactionResponse> list = transactionRepository.findAllByUserOrderByDateDesc(user).stream()
                 .map(TransactionResponse::from)
                 .collect(Collectors.toList());
+
+        return ListResponse.of(list);
     }
 
     // 3. 수정

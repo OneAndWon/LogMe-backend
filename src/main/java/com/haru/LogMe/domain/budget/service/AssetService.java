@@ -7,6 +7,7 @@ import com.haru.LogMe.domain.budget.repository.AssetRepository;
 import com.haru.LogMe.domain.user.entity.User;
 import com.haru.LogMe.global.exception.CustomException;
 import com.haru.LogMe.global.exception.ErrorCode;
+import com.haru.LogMe.global.response.ListResponse;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -32,12 +33,14 @@ public class AssetService {
         return AssetResponse.from(assetRepository.save(asset));
     }
 
-    public List<AssetResponse> getAssets(User user) {
-        // Repository에 findAllByUser(User user) 메서드 추가 필요
-        return assetRepository.findAll().stream()
-                .filter(a -> a.getUser().getUserId().equals(user.getUserId())) // 임시 필터
+    public ListResponse<AssetResponse> getAssets(User user) {
+        List<AssetResponse> list = assetRepository.findAll().stream()
+                .filter(a -> a.getUser().getUserId().equals(user.getUserId()))
                 .map(AssetResponse::from)
                 .collect(Collectors.toList());
+
+        // 포장해서 반환
+        return ListResponse.of(list);
     }
 
     @Transactional

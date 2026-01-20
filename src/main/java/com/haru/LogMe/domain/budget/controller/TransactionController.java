@@ -5,6 +5,7 @@ import com.haru.LogMe.domain.budget.dto.TransactionResponse;
 import com.haru.LogMe.domain.budget.service.TransactionService;
 import com.haru.LogMe.domain.user.entity.User;
 import com.haru.LogMe.global.response.ApiResponse;
+import com.haru.LogMe.global.response.ListResponse;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
@@ -30,11 +31,10 @@ public class TransactionController {
 
     // 2. 목록 조회
     @GetMapping
-    public ApiResponse<List<TransactionResponse>> getTransactions(
+    public ApiResponse<ListResponse<TransactionResponse>> getTransactions(
             @AuthenticationPrincipal User user) {
 
-        List<TransactionResponse> response = transactionService.getTransactions(user);
-        return ApiResponse.ok(response);
+        return ApiResponse.ok(transactionService.getTransactions(user));
     }
 
     // 3. 수정

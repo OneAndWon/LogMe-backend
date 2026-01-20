@@ -5,6 +5,7 @@ import com.haru.LogMe.domain.diary.dto.DiaryResponse;
 import com.haru.LogMe.domain.diary.service.DiaryService;
 import com.haru.LogMe.domain.user.entity.User;
 import com.haru.LogMe.global.response.ApiResponse;
+import com.haru.LogMe.global.response.ListResponse;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import jakarta.validation.Valid;
@@ -37,17 +38,11 @@ public class DiaryController {
     // 2. 목록 조회 (수정됨)
     @Operation(summary = "일기 목록 조회 (캘린더용)")
     @GetMapping
-    public ApiResponse<Map<String, Object>> getDiaries(
+    public ApiResponse<ListResponse<DiaryResponse.Summary>> getDiaries(
             @AuthenticationPrincipal User user,
             @RequestParam(name = "year-month") String yearMonth
     ) {
-        List<DiaryResponse.Summary> list = diaryService.getDiaries(user, yearMonth);
-
-        Map<String, Object> data = new HashMap<>();
-        data.put("content", list);
-        data.put("totalElements", list.size());
-
-        return ApiResponse.ok(data);
+        return ApiResponse.ok(diaryService.getDiaries(user, yearMonth));
     }
 
     // 3. 상세 조회

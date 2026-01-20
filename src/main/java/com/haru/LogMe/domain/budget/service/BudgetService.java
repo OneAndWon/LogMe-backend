@@ -9,6 +9,7 @@ import com.haru.LogMe.domain.budget.repository.FinanceCategoryRepository;
 import com.haru.LogMe.domain.user.entity.User;
 import com.haru.LogMe.global.exception.CustomException;
 import com.haru.LogMe.global.exception.ErrorCode;
+import com.haru.LogMe.global.response.ListResponse;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -46,10 +47,12 @@ public class BudgetService {
         return BudgetResponse.from(budget);
     }
 
-    public List<BudgetResponse> getBudgets(User user, String yearMonth) {
-        return budgetRepository.findAllByUserAndYearMonth(user, yearMonth).stream()
+    public ListResponse<BudgetResponse> getBudgets(User user, String yearMonth) {
+        List<BudgetResponse> list = budgetRepository.findAllByUserAndYearMonth(user, yearMonth).stream()
                 .map(BudgetResponse::from)
                 .collect(Collectors.toList());
+
+        return ListResponse.of(list);
     }
 
     @Transactional

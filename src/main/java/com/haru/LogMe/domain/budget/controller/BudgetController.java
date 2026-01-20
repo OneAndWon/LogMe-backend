@@ -5,6 +5,7 @@ import com.haru.LogMe.domain.budget.dto.BudgetResponse;
 import com.haru.LogMe.domain.budget.service.BudgetService;
 import com.haru.LogMe.domain.user.entity.User;
 import com.haru.LogMe.global.response.ApiResponse;
+import com.haru.LogMe.global.response.ListResponse;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
@@ -29,7 +30,7 @@ public class BudgetController {
 
     // 2. 월별 예산 목록 조회 (Query Parameter: ?month=2025-11)
     @GetMapping
-    public ApiResponse<List<BudgetResponse>> getBudgets(
+    public ApiResponse<ListResponse<BudgetResponse>> getBudgets(
             @AuthenticationPrincipal User user,
             @RequestParam("month") String yearMonth) {
 
