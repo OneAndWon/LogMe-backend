@@ -5,9 +5,14 @@ spring:
   application:
     name: my-awesome-app
 
-  # 기본 프로필을 dev로 설정 (지정하지 않을 경우 dev가 활성화됨)
+  # 기본 프로필을 local로 설정 (지정하지 않을 경우 local가 활성화됨)
   profiles:
-    default: dev
+    default: local
+
+  servlet:
+    multipart:
+      max-file-size: 10MB      # 파일 하나당 최대 크기
+      max-request-size: 10MB   # 요청 전체 최대 크기
 
   jpa:
     show-sql: true # SQL 쿼리 로깅 (개발 시 유용)
@@ -35,30 +40,38 @@ jwt:
 ---
 
 # ---------------------------------
-# (2) 'dev' 프로필 (개발용: H2)
+# (2) 'local' 프로필
 # ---------------------------------
 spring:
   config:
     activate:
-      on-profile: dev # 'dev' 프로필일 때 이 설정이 활성화됨
+      on-profile: local # 'local' 프로필일 때 이 설정이 활성화됨
+
+  cloud:
+    aws:
+      s3:
+        enabled: false
+      region:
+        static: ap-northeast-2  # (혹시 몰라 더미 값 넣어둠)
+      stack:
 
   datasource:
-    driver-class-name: org.h2.Driver
-    # H2 인메모리 DB 사용
-    url: jdbc:h2:mem:testdb;DB_CLOSE_DELAY=-1
-    username: sa
-    password:
-
-  h2:
-    console:
-      enabled: true   # H2 콘솔 (http://localhost:8080/h2-console) 활성화
-      path: /h2-console
+    driver-class-name: org.postgresql.Driver
+    url: jdbc:postgresql://localhost:5432/logme_db
+    username: logme_user
+    password: logme_password
 
   jpa:
-    database-platform: org.hibernate.dialect.H2Dialect
-    # 애플리케이션 실행 시 스키마를 (삭제 후) 다시 생성
+    database-platform: org.hibernate.dialect.PostgreSQLDialect
     hibernate:
-      ddl-auto: create-drop
+      ddl-auto: update
+      # ddl-auto: create
+    properties:
+      hibernate:
+        # SQL 쿼리를 터미널에서 보기 편하게 포맷팅
+        format_sql: true
+    # 터미널에 실행되는 SQL 쿼리 로그를 보여줌 (디버깅에 유용)
+    show-sql: true
 
 ---
 

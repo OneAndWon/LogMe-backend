@@ -53,7 +53,7 @@ public class SecurityConfig {
 
                 // 3-4. HTTP 요청 권한 설정
                 .authorizeHttpRequests(auth -> auth
-                        // "/api/auth/**" (회원가입/로그인)는 인증 없이 허용
+                        // "/logme/auth/**" (회원가입/로그인)는 인증 없이 허용
                         .requestMatchers("/logme/auth/**").permitAll()
 
                         // Swagger UI 관련 엔드포인트 허용
@@ -63,6 +63,14 @@ public class SecurityConfig {
                                 "/api-docs/**",      // application.yml에서 설정한 경로
                                 "/v3/api-docs/**"    // Swagger 설정 파일 경로
                         ).permitAll()
+
+                        // (추가) 비회원(GUEST) 또는 정회원(USER)만 접근 가능
+                        .requestMatchers(
+                                "/logme/todos/**",   // Todo
+                                "/logme/diaries/**",  // Diary
+                                "/logme/transactions/**", // Transaction
+                                "/logme/users/me"    // 내 정보 조회
+                        ).hasAnyAuthority("ROLE_GUEST", "ROLE_USER")
 
                         // 그 외 모든 요청은 인증 필요
                         .anyRequest().authenticated())
