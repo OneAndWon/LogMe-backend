@@ -11,6 +11,7 @@ import com.haru.LogMe.domain.budget.repository.TransactionRepository;
 import com.haru.LogMe.domain.user.entity.User;
 import com.haru.LogMe.global.exception.CustomException;
 import com.haru.LogMe.global.exception.ErrorCode;
+import com.haru.LogMe.global.response.ListResponse;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -59,13 +60,23 @@ public class TransactionService {
     }
 
     // 2. 목록 조회
-    public List<TransactionResponse> getTransactions(User user) {
-        return transactionRepository.findAllByUserOrderByDateDesc(user).stream()
+    public ListResponse<TransactionResponse> getTransactions(User user) {
+        List<TransactionResponse> list = transactionRepository.findAllByUserOrderByDateDesc(user).stream()
                 .map(TransactionResponse::from)
                 .collect(Collectors.toList());
+
+        return ListResponse.of(list);
     }
 
-    // 3. 수정
+    // 3. 거래 내역 상세 조회
+    public TransactionResponse getTransactionDetail(Long transactionId, User user) {
+        Transaction transaction = transactionRepository.findByTransactionIdAndUser(transactionId, user)
+                .orElseThrow(() -> new CustomException(ErrorCode.TRANSACTION_NOT_FOUND));
+
+        return TransactionResponse.from(transaction);
+    }
+
+    // 4. 수정
     @Transactional
     public TransactionResponse updateTransaction(Long transactionId, User user, TransactionRequest.UpdateDto request) {
         Transaction transaction = transactionRepository.findByTransactionIdAndUser(transactionId, user)
@@ -99,7 +110,7 @@ public class TransactionService {
         return TransactionResponse.from(transaction);
     }
 
-    // 4. 삭제
+    // 5. 삭제
     @Transactional
     public void deleteTransaction(Long transactionId, User user) {
         Transaction transaction = transactionRepository.findByTransactionIdAndUser(transactionId, user)

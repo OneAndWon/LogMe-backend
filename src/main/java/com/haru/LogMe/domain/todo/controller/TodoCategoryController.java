@@ -5,6 +5,7 @@ import com.haru.LogMe.domain.todo.dto.TodoCategoryResponse;
 import com.haru.LogMe.domain.todo.service.TodoCategoryService;
 import com.haru.LogMe.domain.user.entity.User;
 import com.haru.LogMe.global.response.ApiResponse;
+import com.haru.LogMe.global.response.ListResponse;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import jakarta.validation.Valid;
@@ -34,15 +35,9 @@ public class TodoCategoryController {
     // 2. 목록 조회
     @Operation(summary = "카테고리 목록 조회")
     @GetMapping
-    public ApiResponse<Map<String, Object>> getCategories(
+    public ApiResponse<ListResponse<TodoCategoryResponse>> getCategories(
             @Parameter(hidden = true) @AuthenticationPrincipal User user) {
-        List<TodoCategoryResponse> list = todoCategoryService.getCategories(user);
-
-        Map<String, Object> data = new HashMap<>();
-        data.put("content", list);
-        data.put("totalElements", list.size());
-
-        return ApiResponse.ok(data);
+        return ApiResponse.ok(todoCategoryService.getCategories(user));
     }
 
     // 3. 수정
