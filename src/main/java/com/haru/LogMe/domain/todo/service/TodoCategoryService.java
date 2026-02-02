@@ -9,6 +9,7 @@ import com.haru.LogMe.domain.todo.repository.TodoRepository;
 import com.haru.LogMe.domain.user.entity.User;
 import com.haru.LogMe.global.exception.CustomException;
 import com.haru.LogMe.global.exception.ErrorCode;
+import com.haru.LogMe.global.response.ListResponse;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -35,10 +36,12 @@ public class TodoCategoryService {
 
     // 2. 목록 조회
     @Transactional(readOnly = true)
-    public List<TodoCategoryResponse> getCategories(User user) {
-        return todoCategoryRepository.findAllByUser(user).stream()
+    public ListResponse<TodoCategoryResponse> getCategories(User user) {
+        List<TodoCategoryResponse> list = todoCategoryRepository.findAllByUser(user).stream()
                 .map(TodoCategoryResponse::new)
                 .collect(Collectors.toList());
+
+        return ListResponse.of(list);
     }
 
     // 3. 수정

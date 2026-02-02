@@ -5,6 +5,7 @@ import com.haru.LogMe.domain.todo.dto.TodoResponse;
 import com.haru.LogMe.domain.todo.service.TodoService;
 import com.haru.LogMe.domain.user.entity.User;
 import com.haru.LogMe.global.response.ApiResponse;
+import com.haru.LogMe.global.response.ListResponse;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import jakarta.validation.Valid;
@@ -34,16 +35,10 @@ public class TodoController {
     // 2. 목록 조회
     @Operation(summary = "할 일 목록 조회", description = "모든 할 일 목록을 조회합니다.")
     @GetMapping
-    public ApiResponse<Map<String, Object>> getTodos(
+    public ApiResponse<ListResponse<TodoResponse>> getTodos(
             @Parameter(hidden = true) @AuthenticationPrincipal User user
     ) {
-        List<TodoResponse> list = todoService.getTodos(user);
-
-        Map<String, Object> data = new HashMap<>();
-        data.put("content", list);
-        data.put("totalElements", list.size());
-
-        return ApiResponse.ok(data);
+        return ApiResponse.ok(todoService.getTodos(user));
     }
 
     // 3. 수정

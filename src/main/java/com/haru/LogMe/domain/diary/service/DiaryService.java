@@ -8,7 +8,8 @@ import com.haru.LogMe.domain.diary.entity.DiaryAttachment;
 import com.haru.LogMe.domain.user.entity.User;
 import com.haru.LogMe.global.exception.CustomException;
 import com.haru.LogMe.global.exception.ErrorCode;
-import com.haru.LogMe.global.util.LocalFileStore;
+import com.haru.LogMe.global.response.ListResponse;
+import com.haru.LogMe.global.util.FileStore;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -25,7 +26,7 @@ import java.util.stream.Collectors;
 public class DiaryService {
 
     private final DiaryRepository diaryRepository;
-    private final LocalFileStore localFileStore;
+    private final FileStore fileStore;
 
     // 1. 일기 생성 및 수정 (Upsert)
     @Transactional
@@ -52,7 +53,7 @@ public class DiaryService {
     }
 
     // 2. 일기 목록 조회 (캘린더 뷰) - 반환 타입 변경 (Detail -> Summary)
-    public List<DiaryResponse.Summary> getDiaries(User user, String monthParam) {
+    public ListResponse<DiaryResponse.Summary> getDiaries(User user, String monthParam) {
         YearMonth yearMonth;
         try {
             yearMonth = YearMonth.parse(monthParam);
@@ -63,9 +64,11 @@ public class DiaryService {
         LocalDate startDate = yearMonth.atDay(1);
         LocalDate endDate = yearMonth.atEndOfMonth();
 
-        return diaryRepository.findAllByUserAndDateBetweenOrderByDateAsc(user, startDate, endDate).stream()
+        List<DiaryResponse.Summary> list = diaryRepository.findAllByUserAndDateBetweenOrderByDateAsc(user, startDate, endDate).stream()
                 .map(DiaryResponse.Summary::new)
                 .collect(Collectors.toList());
+
+        return ListResponse.of(list);
     }
 
     // 3. 상세 조회
@@ -95,7 +98,7 @@ public class DiaryService {
         if (!diary.getAttachments().isEmpty()) {
             // 물리 파일 먼저 삭제
             for (DiaryAttachment old : diary.getAttachments()) {
-                localFileStore.deleteFile(old.getFileUrl());
+                fileStore.deleteFile(old.getFileUrl());
             }
             // DB 연관관계 끊기 (삭제)
             diary.getAttachments().clear();
@@ -104,7 +107,7 @@ public class DiaryService {
         // 3. 새 파일 저장
         String storedFilePath;
         try {
-            storedFilePath = localFileStore.storeFile(file);
+            storedFilePath = fileStore.storeFile(file);
         } catch (IOException e) {
             // 파일 저장 실패 시 예외 발생 (CustomException에 FILE_UPLOAD_ERROR 추가 필요)
             throw new CustomException(ErrorCode.FILE_UPLOAD_ERROR);
@@ -131,7 +134,7 @@ public class DiaryService {
 
         if (!diary.getAttachments().isEmpty()) {
             // 물리 파일 삭제
-            diary.getAttachments().forEach(a -> localFileStore.deleteFile(a.getFileUrl()));
+            diary.getAttachments().forEach(a -> fileStore.deleteFile(a.getFileUrl()));
             // DB 데이터 삭제
             diary.getAttachments().clear();
         }

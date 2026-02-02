@@ -8,6 +8,7 @@ import com.haru.LogMe.domain.todo.repository.TodoRepository;
 import com.haru.LogMe.domain.user.entity.User;
 import com.haru.LogMe.global.exception.CustomException;
 import com.haru.LogMe.global.exception.ErrorCode;
+import com.haru.LogMe.global.response.ListResponse;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -49,10 +50,12 @@ public class TodoService {
 
     // 2. 목록 조회
     @Transactional(readOnly = true)
-    public List<TodoResponse> getTodos(User user) {
-        return todoRepository.findAllByUserOrderByDueDateAsc(user).stream()
+    public ListResponse<TodoResponse> getTodos(User user) {
+        List<TodoResponse> list = todoRepository.findAllByUserOrderByDueDateAsc(user).stream()
                 .map(TodoResponse::new)
                 .collect(Collectors.toList());
+
+        return ListResponse.of(list);
     }
 
     // 3. 수정 (PATCH)
