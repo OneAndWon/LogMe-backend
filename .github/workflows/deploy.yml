@@ -7,8 +7,40 @@ on:
 jobs:
   deploy:
     runs-on: ubuntu-latest
+
     steps:
-      - name: SSH로 EC2 접속 및 배포 실행
+      # 1. 깃허브 코드를 가져옴
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      # 2. Java 21 세팅 (여기서 21버전으로 빌드 환경을 만듦)
+      - name: Set up JDK 21
+        uses: actions/setup-java@v4
+        with:
+          distribution: 'temurin'
+          java-version: '21'
+
+      # 3. Gradle 권한 부여
+      - name: Grant execute permission for gradlew
+        run: chmod +x gradlew
+
+      # 4. 빌드 수행 (GitHub 컴퓨터에서 실행)
+      - name: Build with Gradle
+        run: ./gradlew clean build -x test
+
+      # 5. 완성된 jar 파일을 EC2로 전송 (SCP)
+      - name: Copy Jar to EC2
+        uses: appleboy/scp-action@master
+        with:
+          host: ${{ secrets.EC2_HOST }}
+          username: ${{ secrets.EC2_USERNAME }}
+          key: ${{ secrets.EC2_SSH_KEY }}
+          source: "build/libs/*.jar"
+          target: "/home/ec2-user/LogMe-backend"
+          strip_components: 2 # build/libs 경로를 떼고 jar 파일만 딱 넣기 위함
+
+      # 6. EC2에 접속해서 재시작 (이제 빌드 과정 없이 바로 실행)
+      - name: Restart Server
         uses: appleboy/ssh-action@v1.0.3
         with:
           host: ${{ secrets.EC2_HOST }}
@@ -16,30 +48,13 @@ jobs:
           key: ${{ secrets.EC2_SSH_KEY }}
           port: 22
           script: |
-            # 1. 프로젝트 폴더로 이동 (본인 경로로 수정)
+            # EC2 내부 작업 시작
             cd /home/ec2-user/LogMe-backend
             
-            # 2. 최신 코드 Pull
-            git pull origin main
-            
-            # 3. 권한 재설정 (스크립트 실행 보장)
-            chmod +x gradlew
+            # 실행 권한 확실하게 주기
             chmod +x start.sh
             
-            # 4. 기존 서버 종료 (java 프로세스 kill)
-            pid=$(pgrep -f 'java -jar')
-            if [ -n "$pid" ]; then
-              kill -9 $pid
-              echo "💀 기존 서버 종료 (PID: $pid)"
-            else
-              echo "💤 실행 중인 서버 없음."
-            fi
-            
-            # 5. 빌드 (RDS/S3 연결 테스트는 로컬/Prod 실행 시 수행되므로 빌드는 skip test 권장)
-            ./gradlew clean build -x test --no-daemon -Dorg.gradle.jvmargs="-Xmx512m"
-            
-            # 6. 새 서버 실행
-            # (IAM Role이 S3 권한 처리, application.yml이 RDS 접속 처리)
+            # start.sh 실행 (내부에서 기존 프로세스 종료 및 새 jar 실행)
             ./start.sh
             
             echo "🎉 배포 완료."
