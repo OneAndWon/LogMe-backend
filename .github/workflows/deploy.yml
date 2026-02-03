@@ -35,7 +35,7 @@ jobs:
           host: ${{ secrets.EC2_HOST }}
           username: ${{ secrets.EC2_USERNAME }}
           key: ${{ secrets.EC2_SSH_KEY }}
-          source: "build/libs/*.jar"
+          source: "build/libs/*.jar,start.sh"
           target: "/home/ec2-user/LogMe-backend"
           strip_components: 2 # build/libs 경로를 떼고 jar 파일만 딱 넣기 위함
 
