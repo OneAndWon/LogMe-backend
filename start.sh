@@ -11,7 +11,7 @@ fi
 
 # 2. 서버 실행
 # $변수명 형태로 env.sh의 값을 주입받아 실행
-nohup java -jar -Dspring.profiles.active=prod \
+nohup java -Xms256m -Xmx400m -jar -Dspring.profiles.active=prod \
   -Dspring.jpa.hibernate.ddl-auto=update \
   -Dspring.cloud.aws.s3.bucket=$S3_BUCKET_NAME \
   -Dspring.datasource.url=jdbc:mysql://$PROD_DB_HOST:$PROD_DB_PORT/$PROD_DB_NAME \
