@@ -26,10 +26,7 @@ jobs:
             chmod +x gradlew
             chmod +x start.sh
             
-            # 4. 빌드 (RDS/S3 연결 테스트는 로컬/Prod 실행 시 수행되므로 빌드는 skip test 권장)
-            ./gradlew clean build -x test --no-daemon -Dorg.gradle.jvmargs="-Xmx512m"
-            
-            # 5. 기존 서버 종료 (java 프로세스 kill)
+            # 4. 기존 서버 종료 (java 프로세스 kill)
             pid=$(pgrep -f 'java -jar')
             if [ -n "$pid" ]; then
               kill -9 $pid
@@ -37,6 +34,9 @@ jobs:
             else
               echo "💤 실행 중인 서버 없음."
             fi
+            
+            # 5. 빌드 (RDS/S3 연결 테스트는 로컬/Prod 실행 시 수행되므로 빌드는 skip test 권장)
+            ./gradlew clean build -x test --no-daemon -Dorg.gradle.jvmargs="-Xmx512m"
             
             # 6. 새 서버 실행
             # (IAM Role이 S3 권한 처리, application.yml이 RDS 접속 처리)
