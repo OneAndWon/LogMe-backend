@@ -1,0 +1,45 @@
+name: Deploy to EC2 + RDS + S3
+
+on:
+  push:
+    branches: [ "main" ]
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - name: SSH로 EC2 접속 및 배포 실행
+        uses: appleboy/ssh-action@v1.0.3
+        with:
+          host: ${{ secrets.EC2_HOST }}
+          username: ${{ secrets.EC2_USERNAME }}
+          key: ${{ secrets.EC2_SSH_KEY }}
+          port: 22
+          script: |
+            # 1. 프로젝트 폴더로 이동 (본인 경로로 수정)
+            cd /home/ec2-user/LogMe-backend
+            
+            # 2. 최신 코드 Pull
+            git pull origin main
+            
+            # 3. 권한 재설정 (스크립트 실행 보장)
+            chmod +x gradlew
+            chmod +x start.sh
+            
+            # 4. 빌드 (RDS/S3 연결 테스트는 로컬/Prod 실행 시 수행되므로 빌드는 skip test 권장)
+            ./gradlew clean build -x test
+            
+            # 5. 기존 서버 종료 (java 프로세스 kill)
+            pid=$(pgrep -f 'java -jar')
+            if [ -n "$pid" ]; then
+              kill -9 $pid
+              echo "💀 기존 서버 종료 (PID: $pid)"
+            else
+              echo "💤 실행 중인 서버 없음."
+            fi
+            
+            # 6. 새 서버 실행
+            # (IAM Role이 S3 권한 처리, application.yml이 RDS 접속 처리)
+            ./start.sh
+            
+            echo "🎉 배포 완료."
