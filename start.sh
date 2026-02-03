@@ -14,7 +14,7 @@ fi
 nohup java -Xms256m -Xmx400m -jar -Dspring.profiles.active=prod \
   -Dspring.jpa.hibernate.ddl-auto=update \
   -Dspring.cloud.aws.s3.bucket=$S3_BUCKET_NAME \
-  -Dspring.datasource.url=jdbc:mysql://$PROD_DB_HOST:$PROD_DB_PORT/$PROD_DB_NAME \
+  -Dspring.datasource.url=jdbc:postgresql://$PROD_DB_HOST:$PROD_DB_PORT/$PROD_DB_NAME \
   -Dspring.datasource.username=$PROD_DB_USER \
   -Dspring.datasource.password=$PROD_DB_PASS \
   build/libs/*-SNAPSHOT.jar > log.txt 2>&1 &
