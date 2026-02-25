@@ -29,4 +29,15 @@ public class AuthController {
                 ApiResponse.ok(tokenData)
         );
     }
+
+    @PostMapping("/google")
+    public ResponseEntity<ApiResponse<AuthResponse.TokenDto>> googleLogin(
+            @Valid @RequestBody AuthRequest.GoogleLoginDto request
+    ) {
+        AuthResponse.TokenDto tokenData = authService.loginWithGoogle(request);
+
+        return ResponseEntity.ok(
+                ApiResponse.ok(tokenData)
+        );
+    }
 }

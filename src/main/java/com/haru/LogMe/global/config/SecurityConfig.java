@@ -61,10 +61,11 @@ public class SecurityConfig {
                                 "/swagger-ui.html",  // Swagger UI 페이지
                                 "/swagger-ui/**",    // Swagger UI 리소스 (CSS, JS)
                                 "/api-docs/**",      // application.yml에서 설정한 경로
-                                "/v3/api-docs/**"    // Swagger 설정 파일 경로
+                                "/v3/api-docs/**",    // Swagger 설정 파일 경로
+                                "/test.html"          //OAuth2 테스트 페이지
                         ).permitAll()
 
-                        // (추가) 비회원(GUEST) 또는 정회원(USER)만 접근 가능
+                        // 비회원(GUEST) 또는 정회원(USER)만 접근 가능
                         .requestMatchers(
                                 "/logme/todos/**",   // Todo
                                 "/logme/diaries/**",  // Diary
@@ -76,7 +77,7 @@ public class SecurityConfig {
                         .anyRequest().authenticated())
 
                 // 3-5. 우리가 만든 JWT 필터를 Spring Security 필터 체인에 등록
-                // (UsernamePasswordAuthenticationFilter *전에* 실행되어야 함)
+                // (UsernamePasswordAuthenticationFilter 전에 실행되어야 함)
                 .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class);
 
         return http.build();

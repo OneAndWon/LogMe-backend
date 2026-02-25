@@ -38,3 +38,6 @@ out/
 
 .env
 env.sh
+
+# Local Test Files
+src/main/resources/static/test.html

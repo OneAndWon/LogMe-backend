@@ -20,4 +20,9 @@ public interface UserRepository extends JpaRepository<User, Long> {
      * 사용자 ID로 사용자를 찾음.
      */
     Optional<User> findByUserId(Long userId);
+
+    /**
+     * 소셜 로그인 시, provider와 socialId로 사용자를 찾음. (예: provider="google", socialId="1234567890")
+     * */
+    Optional<User> findByProviderAndSocialId(String provider, String socialId);
 }
