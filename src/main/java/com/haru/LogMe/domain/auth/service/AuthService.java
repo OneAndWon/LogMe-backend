@@ -3,6 +3,7 @@ package com.haru.LogMe.domain.auth.service;
 import com.google.api.client.googleapis.auth.oauth2.GoogleIdToken;
 import com.haru.LogMe.domain.auth.dto.AuthRequest;
 import com.haru.LogMe.domain.auth.dto.AuthResponse;
+import com.haru.LogMe.domain.auth.dto.ConvertRequest;
 import com.haru.LogMe.domain.user.entity.User;
 import com.haru.LogMe.domain.user.entity.UserSettings;
 import com.haru.LogMe.domain.user.repository.UserRepository;
@@ -95,5 +96,40 @@ public class AuthService {
         newUser.setUserSettings(defaultSettings);
 
         return userRepository.save(newUser);
+    }
+
+    @Transactional
+    public AuthResponse.TokenDto convertGuestToMember(Long currentUserId, ConvertRequest request) {
+        // 1. 현재 비회원 유저 조회
+        User user = userRepository.findById(currentUserId)
+                .orElseThrow(() -> new RuntimeException("해당 유저를 찾을 수 없습니다."));
+
+        // 2. 이미 정회원인지 체크
+        if (!user.getIsGuest()) {
+            throw new RuntimeException("이미 정회원인 계정입니다.");
+        }
+
+        // 3. 구글 토큰 검증 및 정보 추출 (기존 loginWithGoogle 로직 활용)
+        GoogleIdToken.Payload payload = googleTokenVerifier.verify(request.getSocialAccessToken());
+        String email = payload.getEmail();
+        String socialId = payload.getSubject();
+
+        // 4. 중복 가입 확인 (동일한 소셜 계정으로 이미 가입된 유저가 있는지)
+        if (userRepository.existsByProviderAndSocialId(request.getProvider(), socialId)) {
+            throw new RuntimeException("이미 해당 소셜 계정으로 가입된 내역이 있습니다.");
+        }
+
+        // 5. 비회원 -> 정회원 승격 (In-place Upgrade)
+        user.upgradeToMember(
+                request.getProvider(),
+                socialId,
+                email,
+                request.getNickname() != null ? request.getNickname() : (String) payload.get("name")
+        );
+
+        // 6. 새로운 권한이 담긴 JWT 재발급
+        String newAccessToken = jwtTokenProvider.generateAccessToken(user);
+
+        return new AuthResponse.TokenDto(newAccessToken, user);
     }
 }
