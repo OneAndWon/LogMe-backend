@@ -12,4 +12,11 @@ public class AuthRequest {
         @NotBlank(message = "device_id는 필수입니다.")
         private String deviceId;
     }
+
+    @Getter
+    @NoArgsConstructor
+    public static class GoogleLoginDto {
+        @NotBlank(message = "구글 id_token은 필수입니다.")
+        private String idToken;
+    }
 }

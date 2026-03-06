@@ -56,6 +56,9 @@ dependencies {
 
     // AWS S3 연동 라이브러리 (Spring Cloud AWS 3.x)
     implementation 'io.awspring.cloud:spring-cloud-aws-starter-s3:3.1.0'
+
+    // Google Token 검증용 (구글 API 클라이언트)
+    implementation 'com.google.api-client:google-api-client:2.2.0'
 }
 
 tasks.named('test') {
