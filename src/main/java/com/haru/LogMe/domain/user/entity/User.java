@@ -131,4 +131,10 @@ public class User extends BaseTimeEntity implements UserDetails {
         this.nickname = nickname;
         //deviceID는 기기 식별을 위해 유지하기로 함.
     }
+
+    public void updateNickname(String nickname) {
+        if(nickname != null && !nickname.trim().isEmpty()) {
+            this.nickname = nickname;
+        }
+    }
 }
