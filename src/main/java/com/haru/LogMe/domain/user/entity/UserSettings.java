@@ -33,4 +33,8 @@ public class UserSettings {
         this.user = user;
         this.notificationSettings = (notificationSettings != null) ? notificationSettings : new HashMap<>();
     }
+
+    public void updateNotificationSettings(Map<String, Object> notificationSettings) {
+        this.notificationSettings = notificationSettings;
+    }
 }

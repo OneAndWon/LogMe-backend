@@ -1,11 +1,14 @@
 package com.haru.LogMe.domain.auth.service;
 
+import com.google.api.client.googleapis.auth.oauth2.GoogleIdToken;
 import com.haru.LogMe.domain.auth.dto.AuthRequest;
 import com.haru.LogMe.domain.auth.dto.AuthResponse;
+import com.haru.LogMe.domain.auth.dto.ConvertRequest;
 import com.haru.LogMe.domain.user.entity.User;
 import com.haru.LogMe.domain.user.entity.UserSettings;
 import com.haru.LogMe.domain.user.repository.UserRepository;
 import com.haru.LogMe.global.jwt.JwtTokenProvider;
+import com.haru.LogMe.global.util.GoogleTokenVerifier;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -17,6 +20,8 @@ import java.util.HashMap;
 public class AuthService {
     private final UserRepository userRepository;
     private final JwtTokenProvider jwtTokenProvider;
+
+    private final GoogleTokenVerifier googleTokenVerifier;
 
     @Transactional
     public AuthResponse.TokenDto loginAsGuest(AuthRequest.GuestLoginDto request){
@@ -51,5 +56,80 @@ public class AuthService {
 
         //user 저장. -> cascade = ALL 옵션에 의해 UserSettings도 함께 저장됨
         return userRepository.save(newUser);
+    }
+
+    @Transactional
+    public AuthResponse.TokenDto loginWithGoogle(AuthRequest.GoogleLoginDto request) {
+        // 1. 구글 토큰 검증 및 정보 추출
+        GoogleIdToken.Payload payload = googleTokenVerifier.verify(request.getIdToken());
+        String email = payload.getEmail();
+        String name = (String) payload.get("name");
+        String socialId = payload.getSubject(); // 구글의 고유 식별자 (socialId)
+
+        // 2. Provider와 Social ID로 유저 조회 (없으면 신규 회원가입)
+        User user = userRepository.findByProviderAndSocialId("google", socialId)
+                .orElseGet(() -> createSocialUser(email, name, "google", socialId));
+
+        // 3. 기존 JWT 발급 로직 그대로 사용
+        String accessToken = jwtTokenProvider.generateAccessToken(user);
+
+        // 4. 응답 반환
+        return new AuthResponse.TokenDto(accessToken, user);
+    }
+
+    // 소셜 전용 유저 생성 메서드
+    private User createSocialUser(String email, String nickname, String provider, String socialId) {
+        User newUser = User.builder()
+                .email(email)
+                .nickname(nickname)
+                .provider(provider)
+                .socialId(socialId)
+                .isGuest(false) // 정회원 처리
+                // deviceId는 소셜 로그인 유저이므로 null로 설정
+                .build();
+
+        // 기존처럼 설정(UserSettings) 초기화
+        UserSettings defaultSettings = UserSettings.builder()
+                .user(newUser)
+                .notificationSettings(new HashMap<>())
+                .build();
+        newUser.setUserSettings(defaultSettings);
+
+        return userRepository.save(newUser);
+    }
+
+    @Transactional
+    public AuthResponse.TokenDto convertGuestToMember(Long currentUserId, ConvertRequest request) {
+        // 1. 현재 비회원 유저 조회
+        User user = userRepository.findById(currentUserId)
+                .orElseThrow(() -> new RuntimeException("해당 유저를 찾을 수 없습니다."));
+
+        // 2. 이미 정회원인지 체크
+        if (!user.getIsGuest()) {
+            throw new RuntimeException("이미 정회원인 계정입니다.");
+        }
+
+        // 3. 구글 토큰 검증 및 정보 추출 (기존 loginWithGoogle 로직 활용)
+        GoogleIdToken.Payload payload = googleTokenVerifier.verify(request.getSocialAccessToken());
+        String email = payload.getEmail();
+        String socialId = payload.getSubject();
+
+        // 4. 중복 가입 확인 (동일한 소셜 계정으로 이미 가입된 유저가 있는지)
+        if (userRepository.existsByProviderAndSocialId(request.getProvider(), socialId)) {
+            throw new RuntimeException("이미 해당 소셜 계정으로 가입된 내역이 있습니다.");
+        }
+
+        // 5. 비회원 -> 정회원 승격 (In-place Upgrade)
+        user.upgradeToMember(
+                request.getProvider(),
+                socialId,
+                email,
+                request.getNickname() != null ? request.getNickname() : (String) payload.get("name")
+        );
+
+        // 6. 새로운 권한이 담긴 JWT 재발급
+        String newAccessToken = jwtTokenProvider.generateAccessToken(user);
+
+        return new AuthResponse.TokenDto(newAccessToken, user);
     }
 }

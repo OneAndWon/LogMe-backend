@@ -33,6 +33,13 @@ spring:
       title: "LogMe API Documentation"
       version: "v1.0.0"
 
+  security:
+    oauth2:
+      client:
+        registration:
+          google:
+            client-id: ${GOOGLE_CLIENT_ID}
+
 # JWT 시크릿 키 (터미널에서 'openssl rand -base64 64'로 생성)
 jwt:
   secret: ${JWT_SECRET}

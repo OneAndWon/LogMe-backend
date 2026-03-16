@@ -122,4 +122,19 @@ public class User extends BaseTimeEntity implements UserDetails {
     public boolean isEnabled() {
         return true;
     }
+
+    public void upgradeToMember(String provider, String socialId, String email, String nickname) {
+        this.isGuest = false;
+        this.provider = provider;
+        this.socialId = socialId;
+        this.email = email;
+        this.nickname = nickname;
+        //deviceID는 기기 식별을 위해 유지하기로 함.
+    }
+
+    public void updateNickname(String nickname) {
+        if(nickname != null && !nickname.trim().isEmpty()) {
+            this.nickname = nickname;
+        }
+    }
 }
