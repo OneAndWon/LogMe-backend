@@ -6,6 +6,7 @@ import jakarta.persistence.*;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+import org.hibernate.annotations.SQLRestriction;
 
 import java.time.LocalDateTime;
 
@@ -13,6 +14,7 @@ import java.time.LocalDateTime;
 @Getter
 @NoArgsConstructor
 @Table(name = "todo")
+@SQLRestriction("deleted_at IS NULL")
 public class Todo extends BaseTimeEntity {
     @Id @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "todo_id")
@@ -34,8 +36,18 @@ public class Todo extends BaseTimeEntity {
     @Column(columnDefinition = "TEXT")
     private String memo;
 
+    @Column(name = "recurring_id")
+    private Long recurringId;
+
+    @Enumerated(EnumType.STRING)
+    @Column(name = "priority")
+    private TodoPriority priority; // ('HIGH', 'MEDIUM', 'LOW')
+
     @Column(name = "is_completed")
     private Boolean isCompleted;
+
+    @Column(name = "start_date")
+    private LocalDateTime startDate;
 
     @Column(name = "due_date")
     private LocalDateTime dueDate;
@@ -43,33 +55,41 @@ public class Todo extends BaseTimeEntity {
     @Column(name = "alarm_time")
     private LocalDateTime alarmTime; // 알림 시간
 
-    @Column(name = "recurring_rule")
-    private String recurringRule; // 반복 규칙 (ex: "FREQ=DAILY")
+    @Column(name = "deleted_at")
+    private LocalDateTime deletedAt;
 
     @Builder
-    public Todo(User user, Long categoryId, Long parentTodoId, String title, String memo,
-                Boolean isCompleted, LocalDateTime dueDate, LocalDateTime alarmTime, String recurringRule) {
+    public Todo(User user, Long categoryId, Long recurringId, Long parentTodoId, String title, String memo,
+                TodoPriority priority, Boolean isCompleted, LocalDateTime startDate, LocalDateTime dueDate, LocalDateTime alarmTime) {
         this.user = user;
         this.categoryId = categoryId;
+        this.recurringId = recurringId;
         this.parentTodoId = parentTodoId;
         this.title = title;
         this.memo = memo;
-        this.isCompleted = (isCompleted != null) ? isCompleted : false; // Default false
+        this.priority = (priority != null) ? priority : TodoPriority.MEDIUM;
+        this.isCompleted = (isCompleted != null) ? isCompleted : false;
+        this.startDate = startDate;
         this.dueDate = dueDate;
         this.alarmTime = alarmTime;
-        this.recurringRule = recurringRule;
     }
 
     public void update(Long categoryId, Long parentTodoId, String title, String memo,
-                       Boolean isCompleted, LocalDateTime dueDate, LocalDateTime alarmTime, String recurringRule) {
+                       TodoPriority priority, Boolean isCompleted, LocalDateTime startDate,
+                       LocalDateTime dueDate, LocalDateTime alarmTime) {
         if (categoryId != null) this.categoryId = categoryId;
         if (parentTodoId != null) this.parentTodoId = parentTodoId;
         if (title != null) this.title = title;
         if (memo != null) this.memo = memo;
+        if (priority != null) this.priority = priority;
         if (isCompleted != null) this.isCompleted = isCompleted;
+        if (startDate != null) this.startDate = startDate;
         if (dueDate != null) this.dueDate = dueDate;
         if (alarmTime != null) this.alarmTime = alarmTime;
-        if (recurringRule != null) this.recurringRule = recurringRule;
+    }
+
+    public void delete() {
+        this.deletedAt = LocalDateTime.now();
     }
 
     public void removeCategory() {

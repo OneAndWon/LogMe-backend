@@ -47,22 +47,26 @@ public class TodoController {
     public ApiResponse<TodoResponse> updateTodo(
             @Parameter(hidden = true) @AuthenticationPrincipal User user,
             @PathVariable Long todoId,
+            @RequestParam(required = false) String range,
             @Valid @RequestBody TodoRequest dto
     ) {
-        return ApiResponse.ok(todoService.updateTodo(user, todoId, dto));
+        return ApiResponse.ok(todoService.updateTodo(user, todoId, dto, range));
     }
 
     // 4. 삭제
     @Operation(summary = "할 일 삭제", description = "기존 할 일을 삭제합니다.")
     @DeleteMapping("/{todoId}")
-    public ApiResponse<Map<String, String>> deleteTodo(
+    public ApiResponse<Map<String, Object>> deleteTodo(
             @Parameter(hidden = true) @AuthenticationPrincipal User user,
-            @PathVariable Long todoId
+            @PathVariable Long todoId,
+            @RequestParam(required = false) String range
     ) {
-        todoService.deleteTodo(user, todoId);
+        Long deletedRecurringId = todoService.deleteTodo(user, todoId, range);
 
-        Map<String, String> data = new HashMap<>();
-        data.put("message", "할 일이 삭제되었습니다.");
+        Map<String, Object> data = new HashMap<>();
+        data.put("deleted_todo_id", todoId);
+        data.put("deleted_recurring_id", deletedRecurringId);
+        data.put("message", "future".equals(range) ? "선택한 할 일과 이후 반복 일정이 모두 삭제되었습니다." : "할 일이 삭제되었습니다.");
 
         return ApiResponse.ok(data);
     }
