@@ -80,4 +80,12 @@ public class TodoController {
     ) {
         return ApiResponse.ok(todoService.getTodoDetail(user, todoId));
     }
+
+    // === 개발 및 관리자 테스트용 ===
+    @Operation(summary = "[테스트용] 월간 반복 일정 연장 수동 트리거")
+    @PostMapping("/test/extend-recurring")
+    public ApiResponse<String> testExtendRecurringTodos() {
+        todoService.extendRecurringTodosMonthly(); // 스케줄러가 부르던 서비스 로직을 직접 호출!
+        return ApiResponse.ok("반복 일정 연장 배치가 수동으로 완료되었습니다.");
+    }
 }

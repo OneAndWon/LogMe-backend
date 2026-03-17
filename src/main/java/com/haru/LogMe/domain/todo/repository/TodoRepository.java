@@ -23,4 +23,7 @@ public interface TodoRepository extends JpaRepository<Todo, Long> {
 
     // 반복 ID와 시작 날짜로 조회 - 미래 일정 수정/삭제 등 반복 일정 관리 시 사용
     List<Todo> findAllByRecurringIdAndStartDateGreaterThanEqual(Long recurringId, LocalDateTime startDate);
+
+    // 특정 반복 규칙으로 생성된 투두 중, 날짜가 가장 마지막(최신)인 딱 1개만 가져오기
+    Optional<Todo> findTopByRecurringIdOrderByStartDateDesc(Long recurringId);
 }

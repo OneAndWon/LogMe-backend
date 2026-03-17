@@ -202,6 +202,58 @@ public class TodoService {
                 .orElseThrow(() -> new CustomException(ErrorCode.PARENT_TODO_NOT_FOUND));
     }
 
+    // --- 6. 반복 일정 월간 연장 (스케줄러/배치용) ---
+    @Transactional
+    public void extendRecurringTodosMonthly() {
+        // 1. 활성화된 투두 반복 규칙 모두 조회
+        List<RecurringRule> activeRules = recurringRuleRepository.findAllByStatusAndTargetType("ACTIVE", "TODO");
+
+        // 현재 시점으로부터 1년 뒤 날짜 계산
+        LocalDateTime oneYearFromNow = LocalDateTime.now().plusYears(1);
+        List<Todo> newTodosToSave = new ArrayList<>();
+
+        for (RecurringRule rule : activeRules) {
+            // 2. 해당 규칙으로 생성된 가장 마지막 투두 찾기
+            todoRepository.findTopByRecurringIdOrderByStartDateDesc(rule.getRecurringRuleId())
+                    .ifPresent(lastTodo -> {
+
+                        // 3. 마지막 투두의 '다음 주기' 날짜 계산
+                        LocalDateTime currentStart = calculateNextDate(lastTodo.getStartDate(), rule.getFrequencyType(), rule.getFrequencyValue());
+                        LocalDateTime currentDue = lastTodo.getDueDate() != null ? calculateNextDate(lastTodo.getDueDate(), rule.getFrequencyType(), rule.getFrequencyValue()) : null;
+                        LocalDateTime currentAlarm = lastTodo.getAlarmTime() != null ? calculateNextDate(lastTodo.getAlarmTime(), rule.getFrequencyType(), rule.getFrequencyValue()) : null;
+
+                        // 4. 다음 일정이 '현재 기준 1년 뒤'보다 작거나 같을 때까지 계속 찍어내기
+                        while (!currentStart.isAfter(oneYearFromNow)) {
+                            Todo newTodo = Todo.builder()
+                                    .user(rule.getUser())
+                                    .categoryId(lastTodo.getCategoryId())
+                                    .recurringId(rule.getRecurringRuleId())
+                                    .parentTodoId(lastTodo.getParentTodoId())
+                                    .title(lastTodo.getTitle())
+                                    .memo(lastTodo.getMemo())
+                                    .priority(lastTodo.getPriority()) // 이전 스텝에서 Enum으로 바꾼 부분 완벽 호환
+                                    .isCompleted(false)
+                                    .startDate(currentStart)
+                                    .dueDate(currentDue)
+                                    .alarmTime(currentAlarm)
+                                    .build();
+
+                            newTodosToSave.add(newTodo);
+
+                            // 다음 루프를 위해 날짜 또 더하기
+                            currentStart = calculateNextDate(currentStart, rule.getFrequencyType(), rule.getFrequencyValue());
+                            if (currentDue != null) currentDue = calculateNextDate(currentDue, rule.getFrequencyType(), rule.getFrequencyValue());
+                            if (currentAlarm != null) currentAlarm = calculateNextDate(currentAlarm, rule.getFrequencyType(), rule.getFrequencyValue());
+                        }
+                    });
+        }
+
+        // 5. 모아둔 가짜 데이터들을 한방에 DB에 저장 (Bulk Insert)
+        if (!newTodosToSave.isEmpty()) {
+            todoRepository.saveAll(newTodosToSave);
+        }
+    }
+
     /**
      * 1년 치 반복 투두 생성
      */
