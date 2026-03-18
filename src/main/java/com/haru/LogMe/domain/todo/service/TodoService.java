@@ -86,6 +86,11 @@ public class TodoService {
     // 3. 수정 (PATCH)
     @Transactional
     public TodoResponse updateTodo(User user, Long todoId, TodoRequest dto, String range) {
+
+        if (dto.getTitle() != null && !StringUtils.hasText(dto.getTitle())) {
+            throw new CustomException(ErrorCode.TODO_TITLE_EMPTY);
+        }
+
         Todo todo = todoRepository.findByIdAndUser(todoId, user)
                 .orElseThrow(() -> new CustomException(ErrorCode.TODO_NOT_FOUND));
 
