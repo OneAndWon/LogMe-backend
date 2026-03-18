@@ -26,7 +26,7 @@ import java.util.stream.Collectors;
 public class DiaryService {
 
     private final DiaryRepository diaryRepository;
-    private final FileStore fileStore;
+    //private final FileStore fileStore;
 
     // 1. 일기 생성 및 수정 (Upsert)
     @Transactional
@@ -34,15 +34,14 @@ public class DiaryService {
 
         Diary diary = diaryRepository.findByUserAndDate(user, dto.getDate())
                 .map(existingDiary -> {
-                    // 수정 시: 내용과 이모티콘만 업데이트 (사진 건드리지 않음!)
-                    existingDiary.update(dto.getContent(), dto.getEmotionIcon());
+                    existingDiary.update(dto.getTitle(), dto.getContent(), dto.getEmotionIcon());
                     return existingDiary;
                 })
                 .orElseGet(() -> {
-                    // 생성 시: 내용과 이모티콘만으로 생성
                     Diary newDiary = Diary.builder()
                             .user(user)
                             .date(dto.getDate())
+                            .title(dto.getTitle())
                             .content(dto.getContent())
                             .emotionIcon(dto.getEmotionIcon())
                             .build();
@@ -53,6 +52,7 @@ public class DiaryService {
     }
 
     // 2. 일기 목록 조회 (캘린더 뷰) - 반환 타입 변경 (Detail -> Summary)
+    @Transactional(readOnly = true)
     public ListResponse<DiaryResponse.Summary> getDiaries(User user, String monthParam) {
         YearMonth yearMonth;
         try {
@@ -72,6 +72,7 @@ public class DiaryService {
     }
 
     // 3. 상세 조회
+    @Transactional(readOnly = true)
     public DiaryResponse.Detail getDiaryByDate(User user, LocalDate date) {
         Diary diary = diaryRepository.findByUserAndDate(user, date)
                 .orElseThrow(() -> new CustomException(ErrorCode.DIARY_NOT_FOUND));
@@ -86,6 +87,27 @@ public class DiaryService {
         diaryRepository.delete(diary);
     }
 
+    // 5. 일기 검색 (3가지 검색 방식: 제목, 내용, 통합)
+    @Transactional(readOnly = true)
+    public ListResponse<DiaryResponse.Summary> searchDiaries(User user, String keyword, String searchType) {
+        List<Diary> diaries;
+
+        if ("TITLE".equalsIgnoreCase(searchType)) {
+            diaries = diaryRepository.findAllByUserAndTitleContainingIgnoreCaseOrderByDateDesc(user, keyword);
+        } else if ("CONTENT".equalsIgnoreCase(searchType)) {
+            diaries = diaryRepository.findAllByUserAndContentContainingIgnoreCaseOrderByDateDesc(user, keyword);
+        } else {
+            // "ALL" 이거나 잘못된 값이 들어왔을 때 기본으로 제목+내용 통합 검색
+            diaries = diaryRepository.findByUserAndKeywordInTitleOrContent(user, keyword);
+        }
+
+        List<DiaryResponse.Summary> list = diaries.stream()
+                .map(DiaryResponse.Summary::new)
+                .collect(Collectors.toList());
+
+        return ListResponse.of(list);
+    }
+/*
     // 5. 첨부파일 업로드
     @Transactional
     public String uploadDiaryImage(User user, LocalDate date, MultipartFile file) {
@@ -138,5 +160,5 @@ public class DiaryService {
             // DB 데이터 삭제
             diary.getAttachments().clear();
         }
-    }
+    }*/
 }

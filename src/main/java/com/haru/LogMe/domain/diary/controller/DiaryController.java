@@ -74,6 +74,18 @@ public class DiaryController {
         return ApiResponse.ok(data);
     }
 
+    // 5. 일기 검색
+    @Operation(summary = "일기 검색", description = "searchType은 TITLE, CONTENT, ALL 중 하나를 보냅니다.")
+    @GetMapping("/search")
+    public ApiResponse<ListResponse<DiaryResponse.Summary>> searchDiaries(
+            @AuthenticationPrincipal User user,
+            @RequestParam String keyword,
+            @Parameter(description = "검색 조건 (TITLE, CONTENT, ALL)", example = "ALL")
+            @RequestParam(defaultValue = "ALL") String searchType
+    ) {
+        return ApiResponse.ok(diaryService.searchDiaries(user, keyword, searchType));
+    }
+/*
     // 5. 첨부파일 업로드
     @Operation(summary = "일기 이미지 업로드", description = "특정 날짜의 일기에 이미지를 업로드합니다. (기존 이미지는 삭제되고 교체됨)")
     @PostMapping(value = "/{date}/images", consumes = "multipart/form-data")
@@ -102,5 +114,5 @@ public class DiaryController {
     ) {
         diaryService.deleteDiaryImage(user, date);
         return ApiResponse.ok("이미지가 삭제되었습니다.");
-    }
+    }*/
 }
