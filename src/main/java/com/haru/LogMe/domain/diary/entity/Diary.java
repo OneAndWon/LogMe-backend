@@ -6,8 +6,10 @@ import jakarta.persistence.*;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+import org.hibernate.annotations.SQLRestriction;
 
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -33,35 +35,41 @@ public class Diary extends BaseTimeEntity {
     @Column(nullable = false)
     private LocalDate date;
 
+    @Column(name = "title")
+    private String title;
+
     @Column(name = "content_text", columnDefinition = "TEXT")
-    private String content; // ERD: content_text
+    private String content;
 
     @Column(name = "emotion_icon")
-    private String emotionIcon; // ERD: emotion_icon
+    private String emotionIcon;
 
     // 1:N 관계 (일기 삭제 시 첨부파일도 삭제, 고아 객체 제거 활성화)
-    @OneToMany(mappedBy = "diary", cascade = CascadeType.ALL, orphanRemoval = true)
+    /*@OneToMany(mappedBy = "diary", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<DiaryAttachment> attachments = new ArrayList<>();
+    */
 
     @Builder
-    public Diary(User user, LocalDate date, String content, String emotionIcon) {
+    public Diary(User user, LocalDate date, String title, String content, String emotionIcon) {
         this.user = user;
         this.date = date;
+        this.title = title;
         this.content = content;
         this.emotionIcon = emotionIcon;
     }
 
     // --- 비즈니스 로직 ---
 
-    // 내용 수정 및 첨부파일 교체 (Upsert용)
-    public void update(String content, String emotionIcon) {
+    // 내용 수정 (Upsert용)
+    public void update(String title, String content, String emotionIcon) {
+        this.title = title;
         this.content = content;
         this.emotionIcon = emotionIcon;
     }
 
     // 연관관계 편의 메서드
-    public void addAttachment(DiaryAttachment attachment) {
+    /*public void addAttachment(DiaryAttachment attachment) {
         this.attachments.add(attachment);
         attachment.setDiary(this);
-    }
+    }*/
 }

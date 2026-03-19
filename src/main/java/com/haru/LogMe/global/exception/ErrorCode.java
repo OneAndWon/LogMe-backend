@@ -25,6 +25,8 @@ public enum ErrorCode {
     SELF_PARENT_NOT_ALLOWED(HttpStatus.BAD_REQUEST, "T002", "자기 자신을 상위 할 일로 지정할 수 없습니다."),
     PARENT_TODO_NOT_FOUND(HttpStatus.NOT_FOUND, "T003", "상위 할 일을 찾을 수 없습니다."),
     TODO_TITLE_EMPTY(HttpStatus.BAD_REQUEST, "T004", "할 일의 제목은 비어 있을 수 없습니다."),
+    RECURRING_RULE_NOT_FOUND(HttpStatus.NOT_FOUND, "T005", "반복 규칙을 찾을 수 없습니다."),
+    UNSUPPORTED_RECURRING_TYPE(HttpStatus.BAD_REQUEST, "T006", "지원하지 않는 반복 주기입니다."),
 
     // === 카테고리 (Category) ===
     CATEGORY_NOT_FOUND(HttpStatus.NOT_FOUND, "CA001", "해당 카테고리를 찾을 수 없습니다."),
