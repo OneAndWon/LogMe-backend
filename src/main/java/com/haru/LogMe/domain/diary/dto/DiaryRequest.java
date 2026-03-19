@@ -13,6 +13,8 @@ public class DiaryRequest {
     @NotNull(message = "날짜는 필수입니다.")
     private LocalDate date;
 
+    private String title;
+
     @JsonProperty("content_text")
     private String content;
 
