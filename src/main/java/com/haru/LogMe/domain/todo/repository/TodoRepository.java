@@ -26,4 +26,7 @@ public interface TodoRepository extends JpaRepository<Todo, Long> {
 
     // 특정 반복 규칙으로 생성된 투두 중, 날짜가 가장 마지막(최신)인 딱 1개만 가져오기
     Optional<Todo> findTopByRecurringIdOrderByStartDateDesc(Long recurringId);
+
+    // 통합 대시보드: 특정 날짜(하루 범위)의 마감일 기준 할 일 조회
+    List<Todo> findAllByUserAndDueDateBetween(User user, LocalDateTime start, LocalDateTime end);
 }
