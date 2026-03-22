@@ -57,8 +57,8 @@ public class DashboardResponse {
         @JsonProperty("emotion_icon")
         private String emotionIcon;
 
-        @JsonProperty("content_preview")
-        private String contentPreview;
+        @JsonProperty("title")
+        private String title;
     }
 
     @Getter
@@ -73,6 +73,7 @@ public class DashboardResponse {
 
     @Getter
     @Builder
+    @JsonInclude(JsonInclude.Include.NON_NULL)
     public static class TimelineItemDto {
         private String type; // 'TODO', 'TRANSACTION'
         private String time; // 'HH:mm'

@@ -74,7 +74,7 @@ public class DashboardService {
         // ==========================================
         // 2. [Todo] 집계 및 타임라인 (예정된 할 일, 카테고리 이름 포함)
         // ==========================================
-        List<Todo> dailyTodos = todoRepository.findAllByUserAndDueDateBetween(user, startOfDay, endOfDay);
+        List<Todo> dailyTodos = todoRepository.findAllByUserAndStartDateBetween(user, startOfDay, endOfDay);
 
         // 카테고리 조회를 위한 N+1 방지용 메모리 Map 캐싱
         Map<Long, String> categoryMap = todoCategoryRepository.findAllByUser(user).stream()
@@ -87,14 +87,20 @@ public class DashboardService {
         List<DashboardResponse.UpcomingTodoDto> upcomingTodos = dailyTodos.stream()
                 .filter(todo -> !todo.getIsCompleted())
                 .map(todo -> DashboardResponse.UpcomingTodoDto.builder()
-                        .time(todo.getDueDate() != null ? todo.getDueDate().format(TIME_FORMATTER) : "")
+                        .time(todo.getStartDate() != null ? todo.getStartDate().format(TIME_FORMATTER) : "00:00")
                         .title(todo.getTitle())
                         .build())
                 .limit(2)
                 .collect(Collectors.toList());
 
         for (Todo todo : dailyTodos) {
-            String timeStr = (todo.getDueDate() != null) ? todo.getDueDate().format(TIME_FORMATTER) : "00:00";
+            String timeStr = "00:00";
+            if (todo.getStartDate() != null) {
+                timeStr = todo.getStartDate().format(TIME_FORMATTER);
+            } else if (todo.getDueDate() != null) {
+                timeStr = todo.getDueDate().format(TIME_FORMATTER);
+            }
+
             // 카테고리 맵에서 이름 꺼내오기
             String categoryName = (todo.getCategoryId() != null) ? categoryMap.get(todo.getCategoryId()) : null;
 
@@ -103,7 +109,7 @@ public class DashboardService {
                     .time(timeStr)
                     .title(todo.getTitle())
                     .isCompleted(todo.getIsCompleted())
-                    .categoryName(categoryName) // 카테고리 이름 세팅
+                    .categoryName(categoryName)
                     .build());
         }
 
@@ -114,21 +120,7 @@ public class DashboardService {
         boolean hasDiary = dailyDiary.isPresent();
         String emotionIcon = dailyDiary.map(Diary::getEmotionIcon).orElse(null);
 
-        // 본문 텍스트가 20자를 넘어가면 "..." 처리
-        String contentPreview = dailyDiary.map(Diary::getContent) // (Diary 엔티티의 본문 Getter 메서드명 확인 필요: getContent() 또는 getContentText())
-                .map(content -> content.length() > 20 ? content.substring(0, 20) + "..." : content)
-                .orElse(null);
-
-        // 일기가 존재하면 작성 시간(createdAt)을 기준으로 타임라인에 추가
-        dailyDiary.ifPresent(diary -> {
-            String diaryTimeStr = (diary.getCreatedAt() != null) ? diary.getCreatedAt().format(TIME_FORMATTER) : "00:00";
-
-            timeline.add(DashboardResponse.TimelineItemDto.builder()
-                    .type("DIARY")
-                    .time(diaryTimeStr)
-                    .title(diary.getTitle())
-                    .build());
-        });
+        String diaryTitle = dailyDiary.map(Diary::getTitle).orElse(null);
 
         // ==========================================
         // 4. [Budget] 집계 및 타임라인
@@ -140,7 +132,7 @@ public class DashboardService {
         for (Transaction tx : dailyTransactions) {
             long amount = tx.getAmount().longValue();
 
-            // 🟢 문자열 비교가 아닌 Enum 비교(==)로 변경!
+            //문자열 비교가 아닌 Enum 비교(==)로 변경
             if (TransactionType.INCOME == tx.getType()) {
                 totalIncome += amount;
                 timeline.add(DashboardResponse.TimelineItemDto.builder()
@@ -175,7 +167,7 @@ public class DashboardService {
                 .diarySummary(DashboardResponse.DiarySummaryDto.builder()
                         .hasDiary(hasDiary)
                         .emotionIcon(emotionIcon)
-                        .contentPreview(contentPreview)
+                        .title(diaryTitle)
                         .build())
                 .budgetSummary(DashboardResponse.BudgetSummaryDto.builder()
                         .totalExpense(totalExpense)
