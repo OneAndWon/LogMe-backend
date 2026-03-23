@@ -33,6 +33,7 @@ public enum ErrorCode {
 
     // === 일기 (Diary) ===
     DIARY_NOT_FOUND(HttpStatus.NOT_FOUND, "D001", "해당 날짜의 일기를 찾을 수 없습니다."),
+    INVALID_EMOTION_TYPE(HttpStatus.BAD_REQUEST, "D002", "허용되지 않은 감정 타입입니다."),
 
     //=== 가계부 (Budget/Transaction) ===
     ASSET_NOT_FOUND(HttpStatus.NOT_FOUND, "B001", "해당 자산을 찾을 수 없습니다."),
