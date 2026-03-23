@@ -1,6 +1,7 @@
 package com.haru.LogMe.domain.diary.dto;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
+import com.haru.LogMe.domain.diary.entity.Emotion;
 import jakarta.validation.constraints.NotNull;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -19,6 +20,6 @@ public class DiaryRequest {
     private String content;
 
     @JsonProperty("emotion_icon")
-    private String emotionIcon;
+    private Emotion emotionIcon;
 
 }
