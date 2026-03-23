@@ -1,5 +1,6 @@
 package com.haru.LogMe.domain.budget.dto;
 
+import com.haru.LogMe.domain.budget.entity.TransactionType;
 import jakarta.validation.constraints.NotNull;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -15,7 +16,7 @@ public class TransactionRequest {
         private Long categoryId;  // Nullable
 
         @NotNull(message = "수입/지출 타입은 필수입니다.")
-        private String type;      // income, expense
+        private TransactionType type;      // INCOME, EXPENSE, TRANSFER
 
         @NotNull(message = "금액은 필수입니다.")
         private BigDecimal amount;
@@ -32,7 +33,7 @@ public class TransactionRequest {
     public static class UpdateDto {
         private Long assetId;
         private Long categoryId;
-        private String type;
+        private TransactionType type;
         private BigDecimal amount;
         private LocalDateTime date;
         private String description;

@@ -33,8 +33,9 @@ public class Transaction extends BaseTimeEntity { // 상속 추가
     @JoinColumn(name = "category_id")
     private FinanceCategory category;
 
+    @Enumerated(EnumType.STRING)
     @Column(nullable = false)
-    private String type; // income, expense
+    private TransactionType type; // income, expense
 
     @Column(nullable = false)
     private BigDecimal amount;
@@ -47,7 +48,7 @@ public class Transaction extends BaseTimeEntity { // 상속 추가
     private String memo;
 
     @Builder
-    public Transaction(User user, Asset asset, FinanceCategory category, String type, BigDecimal amount, LocalDateTime date, String description, String memo) {
+    public Transaction(User user, Asset asset, FinanceCategory category, TransactionType type, BigDecimal amount, LocalDateTime date, String description, String memo) {
         this.user = user;
         this.asset = asset;
         this.category = category;
@@ -59,7 +60,7 @@ public class Transaction extends BaseTimeEntity { // 상속 추가
     }
 
     // 수정 메서드 (Dirty Checking 용)
-    public void update(Asset asset, FinanceCategory category, String type, BigDecimal amount, LocalDateTime date, String description, String memo) {
+    public void update(Asset asset, FinanceCategory category, TransactionType type, BigDecimal amount, LocalDateTime date, String description, String memo) {
         this.asset = asset;
         this.category = category;
         this.type = type;

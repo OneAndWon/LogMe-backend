@@ -1,6 +1,7 @@
 package com.haru.LogMe.domain.budget.dto;
 
 import com.haru.LogMe.domain.budget.entity.Transaction;
+import com.haru.LogMe.domain.budget.entity.TransactionType;
 import lombok.Builder;
 import lombok.Getter;
 
@@ -15,7 +16,7 @@ public class TransactionResponse {
     private String assetName;    // 편의상 이름도 함께 반환
     private Long categoryId;
     private String categoryName; // 편의상 이름도 함께 반환
-    private String type;
+    private TransactionType type;
     private BigDecimal amount;
     private LocalDateTime date;
     private String description;
