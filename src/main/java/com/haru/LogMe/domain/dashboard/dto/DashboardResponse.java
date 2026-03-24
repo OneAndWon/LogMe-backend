@@ -2,6 +2,7 @@ package com.haru.LogMe.domain.dashboard.dto;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import com.haru.LogMe.domain.diary.entity.Emotion;
 import lombok.Builder;
 import lombok.Getter;
 
@@ -55,7 +56,7 @@ public class DashboardResponse {
         private boolean hasDiary;
 
         @JsonProperty("emotion_icon")
-        private String emotionIcon;
+        private Emotion emotionIcon;
 
         @JsonProperty("title")
         private String title;

@@ -42,7 +42,8 @@ public class Diary extends BaseTimeEntity {
     private String content;
 
     @Column(name = "emotion_icon")
-    private String emotionIcon;
+    @Enumerated(EnumType.STRING) // DB에 문자열(ex: "HAPPY")로 저장
+    private Emotion emotionIcon;
 
     // 1:N 관계 (일기 삭제 시 첨부파일도 삭제, 고아 객체 제거 활성화)
     /*@OneToMany(mappedBy = "diary", cascade = CascadeType.ALL, orphanRemoval = true)
@@ -50,7 +51,7 @@ public class Diary extends BaseTimeEntity {
     */
 
     @Builder
-    public Diary(User user, LocalDate date, String title, String content, String emotionIcon) {
+    public Diary(User user, LocalDate date, String title, String content, Emotion emotionIcon) {
         this.user = user;
         this.date = date;
         this.title = title;
@@ -61,7 +62,7 @@ public class Diary extends BaseTimeEntity {
     // --- 비즈니스 로직 ---
 
     // 내용 수정 (Upsert용)
-    public void update(String title, String content, String emotionIcon) {
+    public void update(String title, String content, Emotion emotionIcon) {
         this.title = title;
         this.content = content;
         this.emotionIcon = emotionIcon;
