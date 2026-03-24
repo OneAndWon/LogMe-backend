@@ -91,6 +91,7 @@ public class DashboardService {
                         .time(todo.getStartDate() != null ? todo.getStartDate().format(TIME_FORMATTER) : "00:00")
                         .title(todo.getTitle())
                         .build())
+                .sorted(Comparator.comparing(DashboardResponse.UpcomingTodoDto::getTime))
                 .limit(2)
                 .collect(Collectors.toList());
 

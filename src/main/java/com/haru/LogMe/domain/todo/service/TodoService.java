@@ -198,12 +198,12 @@ public class TodoService {
             return; // 상위 투두 설정 안 함 (유효)
         }
 
-        // (추가) 자기 자신을 부모로 설정하는 것 방지
+        // 자기 자신을 부모로 설정하는 것 방지
         if (currentTodoId != null && currentTodoId.equals(parentTodoId)) {
             throw new CustomException(ErrorCode.SELF_PARENT_NOT_ALLOWED);
         }
 
-        // (수정) 상위 투두도 Id와 UserId로 함께 조회 (소유권 검증)
+        // 상위 투두도 Id와 UserId로 함께 조회 (소유권 검증)
         todoRepository.findByIdAndUser(parentTodoId, user)
                 .orElseThrow(() -> new CustomException(ErrorCode.PARENT_TODO_NOT_FOUND));
     }
