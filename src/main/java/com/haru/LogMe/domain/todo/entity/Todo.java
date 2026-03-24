@@ -46,6 +46,9 @@ public class Todo extends BaseTimeEntity {
     @Column(name = "is_completed")
     private Boolean isCompleted;
 
+    @Column(name = "completed_at")
+    private LocalDateTime completedAt;
+
     @Column(name = "start_date")
     private LocalDateTime startDate;
 
@@ -60,7 +63,7 @@ public class Todo extends BaseTimeEntity {
 
     @Builder
     public Todo(User user, Long categoryId, Long recurringId, Long parentTodoId, String title, String memo,
-                TodoPriority priority, Boolean isCompleted, LocalDateTime startDate, LocalDateTime dueDate, LocalDateTime alarmTime) {
+                TodoPriority priority, Boolean isCompleted, LocalDateTime completedAt, LocalDateTime startDate, LocalDateTime dueDate, LocalDateTime alarmTime) {
         this.user = user;
         this.categoryId = categoryId;
         this.recurringId = recurringId;
@@ -69,6 +72,7 @@ public class Todo extends BaseTimeEntity {
         this.memo = memo;
         this.priority = (priority != null) ? priority : TodoPriority.MEDIUM;
         this.isCompleted = (isCompleted != null) ? isCompleted : false;
+        this.completedAt = completedAt;
         this.startDate = startDate;
         this.dueDate = dueDate;
         this.alarmTime = alarmTime;
@@ -77,6 +81,18 @@ public class Todo extends BaseTimeEntity {
     public void update(Long categoryId, Long parentTodoId, String title, String memo,
                        TodoPriority priority, Boolean isCompleted, LocalDateTime startDate,
                        LocalDateTime dueDate, LocalDateTime alarmTime) {
+        if (isCompleted != null) {
+            // false -> true로 변할 때만 현재 시간 기록
+            if (isCompleted && (this.isCompleted == null || !this.isCompleted)) {
+                this.completedAt = LocalDateTime.now();
+            }
+            // true -> false로 변할 때 시간 초기화
+            else if (!isCompleted) {
+                this.completedAt = null;
+            }
+            this.isCompleted = isCompleted;
+        }
+
         if (categoryId != null) this.categoryId = categoryId;
         if (parentTodoId != null) this.parentTodoId = parentTodoId;
         if (title != null) this.title = title;

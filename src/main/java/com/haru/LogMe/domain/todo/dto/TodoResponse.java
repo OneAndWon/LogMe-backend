@@ -34,6 +34,9 @@ public class TodoResponse {
     @JsonProperty("is_completed")
     private Boolean isCompleted;
 
+    @JsonProperty("completed_at")
+    private LocalDateTime completedAt;
+
     @JsonProperty("start_date")
     private LocalDateTime startDate;
 
@@ -62,6 +65,7 @@ public class TodoResponse {
         this.memo = todo.getMemo();
         this.priority = todo.getPriority();
         this.isCompleted = todo.getIsCompleted();
+        this.completedAt = todo.getCompletedAt();
         this.startDate = todo.getStartDate();
         this.dueDate = todo.getDueDate();
         this.alarmTime = todo.getAlarmTime();

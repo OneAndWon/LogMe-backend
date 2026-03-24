@@ -4,6 +4,7 @@ import com.haru.LogMe.global.response.ApiResponse;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.http.converter.HttpMessageNotReadableException;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
@@ -20,6 +21,20 @@ public class GlobalExceptionHandler {
         return ResponseEntity
                 .status(errorCode.getHttpStatus())
                 .body(ApiResponse.error(errorCode));
+    }
+
+    /**
+     * JSON 파싱 오류 처리 (Enum 타입 불일치 등)
+     * 잘못된 Enum 값이 들어오면 500 대신 400(INVALID_INPUT)을 반환합니다.
+     */
+    @ExceptionHandler(HttpMessageNotReadableException.class)
+    public ResponseEntity<ApiResponse<?>> handleHttpMessageNotReadableException(HttpMessageNotReadableException e) {
+        log.warn("HttpMessageNotReadableException occurred: {}", e.getMessage());
+
+        // ErrorCode.INVALID_INPUT(C002)을 사용하여 응답
+        return ResponseEntity
+                .status(ErrorCode.INVALID_EMOTION_TYPE.getHttpStatus())
+                .body(ApiResponse.error(ErrorCode.INVALID_EMOTION_TYPE));
     }
 
     // @Valid 유효성 검사 실패 시 처리 -> 나중에 필요하면 처리

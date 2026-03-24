@@ -10,6 +10,7 @@ import com.haru.LogMe.domain.dashboard.entity.DailySummary;
 import com.haru.LogMe.domain.dashboard.repository.DailySummaryRepository;
 import com.haru.LogMe.domain.diary.Repository.DiaryRepository;
 import com.haru.LogMe.domain.diary.entity.Diary;
+import com.haru.LogMe.domain.diary.entity.Emotion;
 import com.haru.LogMe.domain.todo.entity.Todo;
 import com.haru.LogMe.domain.todo.entity.TodoCategory;
 import com.haru.LogMe.domain.todo.repository.TodoCategoryRepository;
@@ -90,6 +91,7 @@ public class DashboardService {
                         .time(todo.getStartDate() != null ? todo.getStartDate().format(TIME_FORMATTER) : "00:00")
                         .title(todo.getTitle())
                         .build())
+                .sorted(Comparator.comparing(DashboardResponse.UpcomingTodoDto::getTime))
                 .limit(2)
                 .collect(Collectors.toList());
 
@@ -118,7 +120,7 @@ public class DashboardService {
         // ==========================================
         Optional<Diary> dailyDiary = diaryRepository.findByUserAndDate(user, date);
         boolean hasDiary = dailyDiary.isPresent();
-        String emotionIcon = dailyDiary.map(Diary::getEmotionIcon).orElse(null);
+        Emotion emotionIcon = dailyDiary.map(Diary::getEmotionIcon).orElse(null);
 
         String diaryTitle = dailyDiary.map(Diary::getTitle).orElse(null);
 

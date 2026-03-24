@@ -39,6 +39,8 @@ public class TodoService {
 
         // --- 반복 설정이 없는 단건 할 일 ---
         if (dto.getRecurringRule() == null) {
+            boolean isComp = dto.getIsCompleted() != null ? dto.getIsCompleted() : false;
+
             Todo todo = Todo.builder()
                     .user(user)
                     .categoryId(dto.getCategoryId())
@@ -46,7 +48,8 @@ public class TodoService {
                     .title(dto.getTitle())
                     .memo(dto.getMemo())
                     .priority(dto.getPriority())
-                    .isCompleted(dto.getIsCompleted() != null ? dto.getIsCompleted() : false)
+                    .isCompleted(isComp)
+                    .completedAt(isComp ? LocalDateTime.now() : null)
                     .startDate(dto.getStartDate())
                     .dueDate(dto.getDueDate())
                     .alarmTime(dto.getAlarmTime())
@@ -86,7 +89,6 @@ public class TodoService {
     // 3. 수정 (PATCH)
     @Transactional
     public TodoResponse updateTodo(User user, Long todoId, TodoRequest dto, String range) {
-
         if (dto.getTitle() != null && !StringUtils.hasText(dto.getTitle())) {
             throw new CustomException(ErrorCode.TODO_TITLE_EMPTY);
         }
@@ -97,7 +99,6 @@ public class TodoService {
         validateCategory(user, dto.getCategoryId());
         validateParentTodo(user, dto.getParentTodoId(), todoId);
 
-        // 미래 일정 모두 수정할 경우
         if ("future".equals(range) && todo.getRecurringId() != null) {
             List<Todo> futureTodos = todoRepository.findAllByRecurringIdAndStartDateGreaterThanEqual(todo.getRecurringId(), todo.getStartDate());
 
@@ -108,15 +109,15 @@ public class TodoService {
                         dto.getTitle() != null ? dto.getTitle() : futureTodo.getTitle(),
                         dto.getMemo() != null ? dto.getMemo() : futureTodo.getMemo(),
                         dto.getPriority() != null ? dto.getPriority() : futureTodo.getPriority(),
-                        futureTodo.getIsCompleted(), // 미래 일정의 완료 상태는 유지
-                        futureTodo.getStartDate(),   // 미래 일정의 시간 유지
+                        futureTodo.getIsCompleted(),
+                        futureTodo.getStartDate(),
                         futureTodo.getDueDate(),
                         futureTodo.getAlarmTime()
                 );
             }
         }
 
-        // 타겟 투두(또는 단건) 업데이트
+        // 단건 또는 타겟 투두 업데이트 (엔티티의 update 메서드 내부에서 completedAt 처리됨)
         todo.update(
                 dto.getCategoryId(), dto.getParentTodoId(), dto.getTitle(), dto.getMemo(),
                 dto.getPriority(), dto.getIsCompleted(), dto.getStartDate(), dto.getDueDate(), dto.getAlarmTime()
@@ -197,12 +198,12 @@ public class TodoService {
             return; // 상위 투두 설정 안 함 (유효)
         }
 
-        // (추가) 자기 자신을 부모로 설정하는 것 방지
+        // 자기 자신을 부모로 설정하는 것 방지
         if (currentTodoId != null && currentTodoId.equals(parentTodoId)) {
             throw new CustomException(ErrorCode.SELF_PARENT_NOT_ALLOWED);
         }
 
-        // (수정) 상위 투두도 Id와 UserId로 함께 조회 (소유권 검증)
+        // 상위 투두도 Id와 UserId로 함께 조회 (소유권 검증)
         todoRepository.findByIdAndUser(parentTodoId, user)
                 .orElseThrow(() -> new CustomException(ErrorCode.PARENT_TODO_NOT_FOUND));
     }

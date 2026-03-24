@@ -3,6 +3,7 @@ package com.haru.LogMe.domain.diary.dto;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.haru.LogMe.domain.diary.entity.Diary;
 import com.haru.LogMe.domain.diary.entity.DiaryAttachment;
+import com.haru.LogMe.domain.diary.entity.Emotion;
 import lombok.Getter;
 
 import java.time.LocalDate;
@@ -29,7 +30,7 @@ public class DiaryResponse {
         private String content;
 
         @JsonProperty("emotion_icon")
-        private String emotionIcon;
+        private Emotion emotionIcon;
 
         //private AttachmentDto attachment;
 
@@ -60,7 +61,7 @@ public class DiaryResponse {
         private String title;
 
         @JsonProperty("emotion_icon")
-        private String emotionIcon;
+        private Emotion emotionIcon;
 
         public Summary(Diary diary) {
             this.diaryId = diary.getDiaryId();
