@@ -30,68 +30,6 @@ public class AiReportController {
     private final AiReportService aiReportService;
     private final AiReportRepository aiReportRepository;
 
-    /*@Operation(summary = "AI 리포트 조회", description = "주간/월간 리포트를 조회합니다. 없으면 백그라운드에서 생성을 시작합니다.")
-    @GetMapping
-    public ApiResponse<Map<String, Object>> getAiReport(
-            @Parameter(hidden = true) @AuthenticationPrincipal User user,
-            @RequestParam String type,
-            @RequestParam LocalDate date) {
-
-        // type에 따라 시작일 계산 (예: WEEKLY면 6일 전부터 해당 날짜까지)
-        LocalDate startDate = calculateStartDate(type, date);
-
-        // 기존 리포트 조회
-        Optional<AiReport> existingReport = aiReportRepository
-                .findByUserAndTypeAndStartDateAndEndDate(user, type.toUpperCase(), startDate, date);
-
-        if (existingReport.isPresent()) {
-            AiReport report = existingReport.get();
-            Map<String, Object> responseData = new HashMap<>();
-
-            if ("COMPLETED".equals(report.getStatus())) {
-                responseData.put("ai_report_id", report.getId());
-                responseData.put("status", report.getStatus());
-                responseData.put("content", report.getContent());
-                return ApiResponse.ok(responseData);
-
-            } else if ("PENDING".equals(report.getStatus())) {
-                responseData.put("status", "PENDING");
-                responseData.put("message", "AI가 리포트를 생성하고 있습니다. 잠시만 기다려주세요.");
-                return ApiResponse.ok(responseData);
-
-            } else { // FAILED
-                return ApiResponse.error(ErrorCode.AI_REPORT_GENERATION_FAILED);
-            }
-        }
-
-        // --- 리포트가 존재하지 않는 경우 새로 생성 ---
-        AiReport newReport = AiReport.builder()
-                .user(user)
-                .type(type.toUpperCase())
-                .startDate(startDate)
-                .endDate(date)
-                .status("PENDING")
-                .build();
-        aiReportRepository.save(newReport); // 일단 PENDING으로 저장
-
-        // 비동기 스레드에 AI 호출 위임 (클라이언트는 안 기다림)
-        aiReportService.generateAiReportAsync(newReport.getId(), user, startDate, date);
-
-        // 클라이언트에게 즉시 PENDING 응답
-        Map<String, Object> pendingData = new HashMap<>();
-        pendingData.put("status", "PENDING");
-        pendingData.put("message", "AI가 리포트를 생성하고 있습니다. 잠시만 기다려주세요.");
-
-        return ApiResponse.ok(pendingData);
-    }
-
-    private LocalDate calculateStartDate(String type, LocalDate endDate) {
-        if ("WEEKLY".equalsIgnoreCase(type)) {
-            return endDate.minusDays(6); // 일요일 기준 이전 월요일(총 7일)
-        }
-        return endDate.withDayOfMonth(1); // MONTHLY: 해당 월의 1일
-    }*/
-
     @Operation(summary = "AI 리포트 조회", description = "요청 날짜 기준 지난주(월~일) 또는 지난달(1일~말일)의 리포트를 조회/생성합니다.")
     @GetMapping
     public ApiResponse<Map<String, Object>> getAiReport(
