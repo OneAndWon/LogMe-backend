@@ -29,4 +29,7 @@ public interface TodoRepository extends JpaRepository<Todo, Long> {
 
     // 통합 대시보드: 특정 날짜(하루 범위)의 시작일 기준 할 일 조회
     List<Todo> findAllByUserAndStartDateBetween(User user, LocalDateTime start, LocalDateTime end);
+
+    // AI 리포트 데이터 집계용: 특정 기간 내의 투두 목록 조회
+    List<Todo> findAllByUserAndDueDateBetween(User user, LocalDateTime start, LocalDateTime end);
 }

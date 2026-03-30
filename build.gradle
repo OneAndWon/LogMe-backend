@@ -59,6 +59,9 @@ dependencies {
 
     // Google Token 검증용 (구글 API 클라이언트)
     implementation 'com.google.api-client:google-api-client:2.2.0'
+
+	//ai report와 비동기 통신하기 위한 WebClient
+	implementation 'org.springframework.boot:spring-boot-starter-webflux'
 }
 
 tasks.named('test') {

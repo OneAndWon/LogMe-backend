@@ -29,4 +29,7 @@ public interface DiaryRepository extends JpaRepository<Diary, Long> {
     @Query("SELECT d FROM Diary d WHERE d.user = :user AND (LOWER(d.title) LIKE LOWER(CONCAT('%', :keyword, '%')) OR LOWER(d.content) LIKE LOWER(CONCAT('%', :keyword, '%'))) ORDER BY d.date DESC")
     List<Diary> findByUserAndKeywordInTitleOrContent(@Param("user") User user, @Param("keyword") String keyword);
 
+    // 리포트용
+    List<Diary> findAllByUserAndDateBetween(User user, LocalDate start, LocalDate end);
+
 }
