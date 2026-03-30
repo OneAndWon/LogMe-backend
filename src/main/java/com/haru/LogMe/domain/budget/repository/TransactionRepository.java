@@ -15,6 +15,6 @@ public interface TransactionRepository extends JpaRepository<Transaction, Long> 
     // ID와 User로 조회 (보안상 본인 것만 조회/수정/삭제 하기 위함)
     Optional<Transaction> findByTransactionIdAndUser(Long transactionId, User user);
 
-    // 통합 대시보드용: 특정 날짜(하루 범위)의 거래 내역 조회
+    // 통합 대시보드용: 특정 날짜(하루 범위)의 거래 내역 조회, 리포트용
     List<Transaction> findAllByUserAndDateBetween(User user, LocalDateTime start, LocalDateTime end);
 }
