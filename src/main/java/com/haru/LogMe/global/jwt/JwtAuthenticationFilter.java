@@ -1,5 +1,6 @@
 package com.haru.LogMe.global.jwt;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.haru.LogMe.global.exception.CustomException;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
@@ -13,6 +14,8 @@ import org.springframework.util.StringUtils;
 import org.springframework.web.filter.OncePerRequestFilter;
 
 import java.io.IOException;
+import java.util.HashMap;
+import java.util.Map;
 
 /**
  * 매 요청마다 Request Header의 Authorization 헤더에서 토큰을 꺼내 검증하고,
@@ -25,6 +28,7 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
     public static final String BEARER_PREFIX = "Bearer ";
 
     private final JwtTokenProvider jwtTokenProvider;
+    private final ObjectMapper objectMapper;
 
     @Override
     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain)
@@ -45,8 +49,25 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
         } catch (CustomException e) { // ⬅️ JwtTokenProvider의 validateToken에서 던지는 예외
             // validateToken에서 예외 발생 시, SecurityContext를 비웁니다.
             SecurityContextHolder.clearContext();
-            // (필요시) 여기에 response에 401 에러를 직접 응답하는 로직을 추가할 수 있습니다.
-            // (예: jwtAuthenticationEntryPoint.commence(request, response, new InsufficientAuthenticationException("...")))
+
+            // 응답 헤더 설정 (JSON 형식, 한글 깨짐 방지, 401 상태 코드)
+            response.setContentType("application/json;charset=UTF-8");
+            response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
+
+            // 명세서에 맞는 JSON 형태 만들기
+            Map<String, Object> errorResponse = new HashMap<>();
+            errorResponse.put("success", false);
+            errorResponse.put("data", null);
+
+            Map<String, String> errorDetail = new HashMap<>();
+            errorDetail.put("code", e.getErrorCode().name()); // 예: "INVALID_ACCESSTOKEN"
+            errorDetail.put("message", "유효하지 않은 접근입니다."); // 클라이언트에게 보여줄 메시지
+
+            errorResponse.put("error", errorDetail);
+
+            // 생성한 JSON을 클라이언트에게 바로 응답으로 전송하고 필터 강제 종료
+            response.getWriter().write(objectMapper.writeValueAsString(errorResponse));
+            return;
         }
 
         // 4. 다음 필터로 요청 전달
