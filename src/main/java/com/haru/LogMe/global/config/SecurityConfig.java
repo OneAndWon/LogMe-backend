@@ -67,10 +67,28 @@ public class SecurityConfig {
 
                         // 비회원(GUEST) 또는 정회원(USER)만 접근 가능
                         .requestMatchers(
-                                "/logme/todos/**",   // Todo
-                                "/logme/diaries/**",  // Diary
-                                "/logme/transactions/**", // Transaction
-                                "/logme/users/me"    // 내 정보 조회
+                                // 1. 사용자 관련
+                                "/logme/users/me",
+
+                                // 2. 통합 대시보드 및 다짐
+                                "/logme/dashboard",
+                                "/logme/daily-summary/**",
+
+                                // 3. 투두 관련
+                                "/logme/todos/**",
+                                "/logme/todo-categories/**",
+
+                                // 4. 일기 관련
+                                "/logme/diaries/**",
+
+                                // 5. 가계부 관련
+                                "/logme/transactions/**",
+                                "/logme/assets/**",
+                                "/logme/finance-categories/**",
+                                "/logme/budgets/**",
+
+                                // 6. AI 리포트 (베타 멤버 전용이지만, 일단 토큰 인증 통과 후 서비스 단에서 권한 체크)
+                                "/logme/ai-reports/**"
                         ).hasAnyAuthority("ROLE_GUEST", "ROLE_USER")
 
                         // 그 외 모든 요청은 인증 필요

@@ -45,7 +45,7 @@ public class JwtTokenProvider {
     /**
      * Authentication 객체를 받아 Access Token을 생성합니다. -> 로그인 필터용: 소셜로그인 로그인 시 토큰 발급.
      */
-    public String generateAccessToken(Authentication authentication) {
+    /*public String generateAccessToken(Authentication authentication) {
         String authorities = authentication.getAuthorities().stream()
                 .map(GrantedAuthority::getAuthority)
                 .collect(Collectors.joining(","));
@@ -68,7 +68,7 @@ public class JwtTokenProvider {
                 .signWith(key, SignatureAlgorithm.HS512)
                 .setExpiration(validity)
                 .compact();
-    }
+    }*/
 
     /**
      * user 엔티티(UserDetails)를 받아 access token 생성.
@@ -100,19 +100,12 @@ public class JwtTokenProvider {
                 .parseClaimsJws(token)
                 .getBody();
 
-        Collection<? extends GrantedAuthority> authorities =
-                Arrays.stream(claims.get(AUTHORITIES_KEY).toString().split(","))
-                        .map(SimpleGrantedAuthority::new)
-                        .collect(Collectors.toList());
-
-        // claims.getSubject()에는 토큰 생성 시 넣은 "userId"가 들어있음.
-        // userDetailsService.loadUserByUsername()가 CustomUserDetailsService의 메서드를 호출.
-        // 반환되는 userDetails는 DB에서 조회한 'com.haru.LogMe.domain.user.entity.User' 객체임.
+        // 💡 토큰의 숫자 ID(Subject)로 DB에서 진짜 User 엔티티를 조회해옵니다. (500 에러 해결의 핵심!)
         UserDetails userDetails = userDetailsService.loadUserByUsername(claims.getSubject());
 
+        // 조회해온 진짜 User 엔티티를 시큐리티에 넘겨줌.
         return new UsernamePasswordAuthenticationToken(userDetails, token, userDetails.getAuthorities());
     }
-
     /**
      * 토큰의 유효성을 검증합니다.
      * 실패 시 CustomException(ErrorCode.INVALID_ACCESSTOKEN)을 던집니다.
