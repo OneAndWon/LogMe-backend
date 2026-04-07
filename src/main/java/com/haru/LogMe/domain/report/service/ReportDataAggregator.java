@@ -8,6 +8,8 @@ import com.haru.LogMe.domain.diary.Repository.DiaryRepository;
 import com.haru.LogMe.domain.diary.entity.Diary;
 import com.haru.LogMe.domain.report.dto.TimelineDto;
 import com.haru.LogMe.domain.todo.entity.Todo;
+import com.haru.LogMe.domain.todo.entity.TodoCategory;
+import com.haru.LogMe.domain.todo.repository.TodoCategoryRepository;
 import com.haru.LogMe.domain.todo.repository.TodoRepository;
 import com.haru.LogMe.domain.user.entity.User;
 import lombok.RequiredArgsConstructor;
@@ -17,6 +19,7 @@ import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
 import java.time.format.DateTimeFormatter;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.TreeMap;
@@ -28,6 +31,7 @@ public class ReportDataAggregator {
      private final TransactionRepository transactionRepository;
      private final DiaryRepository diaryRepository;
      private final BudgetRepository budgetRepository;
+     private final TodoCategoryRepository todoCategoryRepository;
 
     public String aggregateDataForPrompt(User user, LocalDate startDate, LocalDate endDate) {
         LocalDateTime startDateTime = startDate.atStartOfDay();
@@ -42,6 +46,13 @@ public class ReportDataAggregator {
         String yearMonth = startDate.format(DateTimeFormatter.ofPattern("yyyy-MM"));
         List<Budget> budgets = budgetRepository.findAllByUserAndYearMonth(user, yearMonth);
 
+        // 유저의 모든 투두 카테고리를 한 번에 조회하여 Map으로 캐싱 (N+1 문제 완벽 차단)
+        List<TodoCategory> categories = todoCategoryRepository.findAllByUser(user);
+        Map<Long, String> categoryMap = new HashMap<>();
+        for (TodoCategory category : categories) {
+            categoryMap.put(category.getTodoCategoryId(), category.getName());
+        }
+
         // 2. 날짜별로 데이터를 담을 Map 초기화 (TreeMap을 사용하여 날짜순 정렬 보장)
         Map<LocalDate, TimelineDto> timelineMap = new TreeMap<>();
         for (LocalDate date = startDate; !date.isAfter(endDate); date = date.plusDays(1)) {
@@ -54,9 +65,18 @@ public class ReportDataAggregator {
                 LocalDate date = todo.getDueDate().toLocalDate();
                 if (timelineMap.containsKey(date)) {
                     String priorityStr = todo.getPriority() != null ? todo.getPriority().name() : "MEDIUM";
+
+                    // [핵심 추가] 매번 DB를 찌르지 않고 미리 만들어둔 Map에서 카테고리 이름 가져오기
+                    String categoryName = "미분류"; // 사용자가 카테고리를 지정하지 않았을 때의 방어 로직
+                    if (todo.getCategoryId() != null && categoryMap.containsKey(todo.getCategoryId())) {
+                        categoryName = categoryMap.get(todo.getCategoryId());
+                    }
+
+                    // TimelineDto에 카테고리 이름(categoryName)을 파라미터로 추가 전달
                     timelineMap.get(date).addTodoInfo(
                             todo.getIsCompleted(),
                             priorityStr,
+                            categoryName,
                             todo.getTitle(),
                             todo.getCompletedAt()
                     );
@@ -64,7 +84,7 @@ public class ReportDataAggregator {
             }
         }
 
-         // 4. 가계부 데이터 분류
+        // 4. 가계부 데이터 분류
         for (Transaction tx : transactions) {
             LocalDate date = tx.getDate().toLocalDate();
             if (timelineMap.containsKey(date)) {
