@@ -37,7 +37,7 @@ public class AiReportController {
             @RequestParam String type,
             @RequestParam LocalDate date) {
 
-        // 1. 카톡 기획안 반영: 요청 날짜(date)를 기준으로 지난주/지난달의 정확한 범위 계산
+        // 1. 요청 날짜(date)를 기준으로 지난주/지난달의 정확한 범위 계산
         LocalDate[] dateRange = calculatePastDateRange(type, date);
         LocalDate startDate = dateRange[0];
         LocalDate endDate = dateRange[1];
@@ -67,7 +67,7 @@ public class AiReportController {
             }
         }
 
-        // --- 3. 리포트가 존재하지 않는 경우 새로 생성 ---
+        // 3. 리포트가 존재하지 않는 경우 새로 생성
         AiReport newReport = AiReport.builder()
                 .user(user)
                 .type(type.toUpperCase())
@@ -88,7 +88,7 @@ public class AiReportController {
         return ApiResponse.ok(pendingData);
     }
 
-    // 💡 핵심 로직: 캡처본의 요구사항을 완벽히 만족하는 날짜 계산기
+    // 날짜 계산기
     private LocalDate[] calculatePastDateRange(String type, LocalDate requestDate) {
         if ("WEEKLY".equalsIgnoreCase(type)) {
             // 기준일에서 1주일을 뺀 뒤, 그 주의 월요일과 일요일을 구함
