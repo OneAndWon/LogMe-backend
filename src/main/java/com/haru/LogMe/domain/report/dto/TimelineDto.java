@@ -42,7 +42,7 @@ public class TimelineDto {
             }
         }
 
-        public void addTodoInfo(boolean isCompleted, String priority, String title, LocalDateTime completedAt) {
+        public void addTodoInfo(boolean isCompleted, String priority, String categoryName, String title, LocalDateTime completedAt) {
             this.totalTodos++;
             if (isCompleted) {
                 this.completedTodos++;
@@ -50,7 +50,7 @@ public class TimelineDto {
                     this.completedHours.add(completedAt.getHour()); // 몇 시에 완료했는지 저장
                 }
             } else if ("HIGH".equalsIgnoreCase(priority)) {
-                this.missedHighPriorityTodos.add(title);
+                this.missedHighPriorityTodos.add(String.format("[%s] %s", categoryName, title));
             }
         }
 
