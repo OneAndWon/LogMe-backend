@@ -75,7 +75,7 @@ public class DashboardService {
         // ==========================================
         // 2. [Todo] 집계 및 타임라인 (예정된 할 일, 카테고리 이름 포함)
         // ==========================================
-        List<Todo> dailyTodos = todoRepository.findAllByUserAndStartDateBetween(user, startOfDay, endOfDay);
+        List<Todo> dailyTodos = todoRepository.findDailyTodosForDashboard(user, startOfDay, endOfDay);
 
         // 카테고리 조회를 위한 N+1 방지용 메모리 Map 캐싱
         Map<Long, String> categoryMap = todoCategoryRepository.findAllByUser(user).stream()

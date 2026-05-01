@@ -3,6 +3,8 @@ package com.haru.LogMe.domain.todo.repository;
 import com.haru.LogMe.domain.todo.entity.Todo;
 import com.haru.LogMe.domain.user.entity.User;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.repository.query.Param;
 
 import java.time.LocalDateTime;
 import java.util.List;
@@ -28,7 +30,20 @@ public interface TodoRepository extends JpaRepository<Todo, Long> {
     Optional<Todo> findTopByRecurringIdOrderByStartDateDesc(Long recurringId);
 
     // 통합 대시보드: 특정 날짜(하루 범위)의 시작일 기준 할 일 조회
-    List<Todo> findAllByUserAndStartDateBetween(User user, LocalDateTime start, LocalDateTime end);
+    //List<Todo> findAllByUserAndStartDateBetween(User user, LocalDateTime start, LocalDateTime end);
+
+    // 통합 대시보드: 특정 날짜(하루 범위)의 시작일, 마감일, 관통하는 일정 모두 포함
+    @Query("SELECT t FROM Todo t WHERE t.user = :user " +
+            "AND (" +
+            "  (t.startDate BETWEEN :startOfDay AND :endOfDay) " + // 1. 시작일이 오늘
+            "  OR (t.dueDate BETWEEN :startOfDay AND :endOfDay) " + // 2. 마감일이 오늘
+            "  OR (t.startDate <= :startOfDay AND t.dueDate >= :endOfDay) " + // 3. 오늘을 관통하는 경우
+            ")")
+    List<Todo> findDailyTodosForDashboard(
+            @Param("user") User user,
+            @Param("startOfDay") LocalDateTime startOfDay,
+            @Param("endOfDay") LocalDateTime endOfDay
+    );
 
     // AI 리포트 데이터 집계용: 특정 기간 내의 투두 목록 조회
     List<Todo> findAllByUserAndDueDateBetween(User user, LocalDateTime start, LocalDateTime end);
