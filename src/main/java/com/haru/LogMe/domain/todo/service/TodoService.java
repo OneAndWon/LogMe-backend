@@ -58,6 +58,11 @@ public class TodoService {
             return new TodoResponse(todoRepository.save(todo));
         }
 
+        //backlog 작성 시 반복 설정 내용 있을 때 오류 발생.
+        if (dto.getStartDate() == null) {
+            throw new CustomException(ErrorCode.BAD_REQUEST);
+        }
+
         // --- 반복 설정이 있는 할 일 ---
         // 1. 반복 규칙 뼈대 저장
         RecurringRule rule = RecurringRule.builder()
