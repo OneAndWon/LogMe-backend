@@ -3,12 +3,14 @@
 > **파편화된 일상의 기록(일정, 일기, 가계부)을 하나로 연결하고, AI 교차 분석을 통해 삶의 인사이트를 제공하는 서비스**
 
 ---
+
 ## 1. 프로젝트 개요
 > - **개발 기간:** 2025.09 - 2026.05 (9개월)
 > - **개발 인원:** 2인 (백엔드 1명, 안드로이드 프론트엔드 1명)
 > - **담당 역할:** 백엔드 아키텍처 설계, RESTful API 개발, 클라우드 인프라 배포 및 외부 API(OAuth2, OpenAI) 연동
 
 ---
+
 ## 2. 기술 스택
 | Category | Stack |
 |---|---|
@@ -21,11 +23,13 @@
 | Infrastructure & CI/CD | ![AWS](https://img.shields.io/badge/AWS-%23FF9900.svg?style=for-the-badge&logo=amazon-aws&logoColor=white) <br> ![GitHub Actions](https://img.shields.io/badge/github%20actions-%232671E5.svg?style=for-the-badge&logo=githubactions&logoColor=white) |
 
 ---
+
 ## 3. 시스템 아키텍처
 
 <img width="1329" height="689" alt="Image" src="https://github.com/user-attachments/assets/3a29cedf-4aa4-4b53-a7d2-59759904bda6" />
 
 ---
+
 ## 4. 주요 기능 
 
 ### 1. Todo (일정 관리)
@@ -50,5 +54,6 @@
 - 라이프 밸런스, 패턴 분석, 생산성 팁, 소비 습관, 목표 제안, 미래 예측 등 5가지 핵심 인사이트 제공
 
 ---
+
 ## 5. 기능 시연
 - [주요 기능 시연 영상 보기 (YouTube)](https://www.youtube.com/watch?v=n6uCI0sRC9g)
