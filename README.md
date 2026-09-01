@@ -22,7 +22,8 @@
 
 ---
 ## 3. 시스템 아키텍처
-![Architecture](./readmeImage/architecture_diagram.png)
+
+<img width="1329" height="689" alt="Image" src="https://github.com/user-attachments/assets/3a29cedf-4aa4-4b53-a7d2-59759904bda6" />
 
 ---
 ## 4. 주요 기능 
