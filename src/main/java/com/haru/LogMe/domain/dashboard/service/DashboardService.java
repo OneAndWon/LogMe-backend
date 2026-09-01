@@ -87,16 +87,23 @@ public class DashboardService {
         // 예정된 할 일 (미완료 항목 최대 2개 추출)
         List<DashboardResponse.UpcomingTodoDto> upcomingTodos = dailyTodos.stream()
                 .filter(todo -> !todo.getIsCompleted())
-                .map(todo -> DashboardResponse.UpcomingTodoDto.builder()
-                        .time(todo.getStartDate() != null ? todo.getStartDate().format(TIME_FORMATTER) : "00:00")
-                        .title(todo.getTitle())
-                        .build())
+                .filter(todo -> todo.getStartDate() != null || todo.getDueDate() != null)
+                .map(todo -> {
+                    String timeStr = todo.getStartDate() != null ?
+                            todo.getStartDate().format(TIME_FORMATTER) :
+                            todo.getDueDate().format(TIME_FORMATTER);
+
+                    return DashboardResponse.UpcomingTodoDto.builder()
+                            .time(timeStr)
+                            .title(todo.getTitle())
+                            .build();
+                })
                 .sorted(Comparator.comparing(DashboardResponse.UpcomingTodoDto::getTime))
                 .limit(2)
                 .collect(Collectors.toList());
 
         for (Todo todo : dailyTodos) {
-            String timeStr = "00:00";
+            String timeStr = null;
             if (todo.getStartDate() != null) {
                 timeStr = todo.getStartDate().format(TIME_FORMATTER);
             } else if (todo.getDueDate() != null) {
