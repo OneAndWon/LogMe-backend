@@ -45,4 +45,16 @@
 - 라이프 밸런스, 패턴 분석, 생산성 팁, 소비 습관, 목표 제안, 미래 예측 등 5가지 핵심 인사이트 제공
 
 ## 5. 기능 시연
-- [주요 기능 시연 영상 보기 (YouTube)](https://www.youtube.com/watch?v=n6uCI0sRC9g)
+- [프로젝트 설명 영상 보기 (YouTube)](https://www.youtube.com/watch?v=n6uCI0sRC9g)
+
+### 1. todo
+https://github.com/user-attachments/assets/7cfcd9cb-ea50-41a4-80b7-e06744379923
+
+### 2. diary/finance
+https://github.com/user-attachments/assets/7865223a-0936-41f8-bf83-d73fd072eaad
+
+### 3. dashboard
+https://github.com/user-attachments/assets/0428a379-4dc1-4431-b691-685c7bd8870d
+
+### 4. AI report
+https://github.com/user-attachments/assets/75bf8019-6edf-4bce-b052-49dd78365a9d
